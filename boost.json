@@ -1,0 +1,25 @@
+{
+    "agents": [
+        "claude_code",
+        "opencode",
+        "codex"
+    ],
+    "cloud": false,
+    "guidelines": true,
+    "mcp": true,
+    "nightwatch": false,
+    "sail": false,
+    "skills": [
+        "laravel-best-practices",
+        "architect",
+        "audit",
+        "backend-development-rules",
+        "check",
+        "debug",
+        "develop",
+        "document",
+        "scope",
+        "sync",
+        "test"
+    ]
+}
