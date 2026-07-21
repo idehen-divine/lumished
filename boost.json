@@ -2,7 +2,8 @@
     "agents": [
         "claude_code",
         "opencode",
-        "codex"
+        "codex",
+        "copilot"
     ],
     "cloud": false,
     "guidelines": true,

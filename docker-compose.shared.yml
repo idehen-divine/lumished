@@ -1,0 +1,85 @@
+services:
+  caddy:
+    image: caddy:alpine
+    container_name: shelfie-caddy
+    restart: unless-stopped
+    environment:
+      APP_URL: ${APP_URL}
+      APP_ENV: ${APP_ENV}
+      APP_DOMAIN: ${APP_DOMAIN}
+      MINIO_URL: ${MINIO_URL}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./devops/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ${DEPLOY_DIR:-/opt/shelfie}/public:/srv/public:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - shelfie-shared
+
+  mysql:
+    image: mysql:8.0
+    container_name: shelfie-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - ${DATA_DIR:-/opt/shelfie/data}/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shelfie-shared
+
+  redis:
+    image: redis:alpine
+    container_name: shelfie-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shelfie-shared
+
+  minio:
+    image: minio/minio:latest
+    container_name: shelfie-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ${DATA_DIR:-/opt/shelfie}/minio:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shelfie-shared
+
+networks:
+  shelfie-shared:
+    name: shelfie-shared
+    driver: bridge
+
+volumes:
+  redis_data:
+  caddy_data:
+  caddy_config:

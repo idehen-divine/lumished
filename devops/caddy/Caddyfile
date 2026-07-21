@@ -1,0 +1,26 @@
+{$APP_URL}, :80 {
+    root * /srv/public
+
+    request_body {
+        max_size 10MB
+    }
+
+    route {
+        @static file {path} {path}/index.html
+        handle @static {
+            file_server
+        }
+
+        rewrite * /index.php
+        reverse_proxy {$APP_ENV}-app:9000 {
+            transport fastcgi {
+                root /var/www/html/public
+                split .php
+            }
+        }
+    }
+}
+
+{$MINIO_URL} {
+    reverse_proxy shelfie-minio:9000
+}

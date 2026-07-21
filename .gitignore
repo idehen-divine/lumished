@@ -22,7 +22,9 @@
 /storage/pail
 /vendor
 _ide_helper.php
+.phpstorm.meta.php
+.history/
+.scribe/
 Homestead.json
 Homestead.yaml
 Thumbs.db
-.phpstorm.meta.php
