@@ -1,0 +1,538 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\ConfirmTwoFactorRequest;
+use App\Http\Requests\Auth\DeleteAccountRequest;
+use App\Http\Requests\Auth\DisableTwoFactorRequest;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Http\Requests\Auth\UpdateEmailRequest;
+use App\Http\Requests\Auth\VerifyEmailRequest;
+use App\Http\Requests\Auth\VerifyOtpRequest;
+use App\Http\Requests\Auth\VerifyTwoFactorRequest;
+use App\Services\Auth\AuthService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+/**
+ * @group Authentication
+ *
+ * Admin authentication endpoints for login, password management,
+ * email verification, two-factor authentication, and account management.
+ *
+ * @subgroup Admin
+ */
+class AdminAuthController extends Controller
+{
+    public function __construct(protected AuthService $authService) {}
+
+    /**
+     * Log in an admin user.
+     *
+     * Authenticates with email and password. Returns a Sanctum token.
+     * Revokes all previous tokens (single device per user).
+     * After 5 failed attempts the account is locked for 1 hour.
+     * If 2FA is enabled, returns a challenge token instead of an auth token.
+     *
+     * @bodyParam email string required The admin's email address. Example: admin@example.com
+     * @bodyParam password string required The admin's password. Example: Password1
+     *
+     * @response 200 scenario="Success" {
+     *     "code": 200,
+     *     "message": "Login successful",
+     *     "data": {
+     *         "user": {
+     *             "id": "01953801-eeee-1234-5678-1234567890ef",
+     *             "first_name": "Admin",
+     *             "last_name": "User",
+     *             "other_name": null,
+     *             "email": "admin@example.com",
+     *             "phone_no": "+2348012345678",
+     *             "profile_image": null,
+     *             "gender": "MALE",
+     *             "status": "ACTIVE",
+     *             "full_name": "Admin User",
+     *             "role": ["ADMIN"],
+     *             "email_verified_at": "2026-07-21 10:00:00",
+     *             "two_factor_confirmed_at": null,
+     *             "created_at": "2026-07-20 09:00:00"
+     *         },
+     *         "token": "1|abc789def123ghi456jkl789mno012pqr",
+     *         "roles": ["ADMIN"],
+     *         "permissions": ["view_users", "edit_users", "view_reports"]
+     *     }
+     * }
+     * @response 200 scenario="2FA Required" {
+     *     "code": 200,
+     *     "message": "Two-factor authentication required.",
+     *     "data": {
+     *         "requires_2fa": true,
+     *         "challenge_token": "550e8400-e29b-41d4-a716-446655440001"
+     *     }
+     * }
+     * @response 401 scenario="Invalid Credentials" {
+     *     "code": 401,
+     *     "message": "The provided credentials are incorrect."
+     * }
+     * @response 423 scenario="Account Locked" {
+     *     "code": 423,
+     *     "message": "Account is locked due to too many failed attempts. Try again in 1 hour."
+     * }
+     *
+     * @unauthenticated
+     */
+    public function login(LoginRequest $request): JsonResponse
+    {
+        return $this->authService->login($request->validated())->toJson();
+    }
+
+    /**
+     * Log out the current admin.
+     *
+     * Revokes the current Sanctum token.
+     *
+     * @response 200 {
+     *     "code": 200,
+     *     "message": "Logged out successfully"
+     * }
+     *
+     * @authenticated
+     */
+    public function logout(): JsonResponse
+    {
+        return $this->authService->logout(auth()->user())->toJson();
+    }
+
+    /**
+     * Request a password reset OTP.
+     *
+     * Sends a 6-digit OTP to the admin's email if the email is registered.
+     * Does not reveal whether the email exists.
+     *
+     * @bodyParam email string required The registered email address. Example: admin@example.com
+     *
+     * @response 200 {
+     *     "code": 200,
+     *     "message": "If this email is registered, a reset code has been sent.",
+     *     "data": {
+     *         "pending_token": "x8kL3mN9pQ2rV7wZ5tY1bC4dF6gH0jS"
+     *     }
+     * }
+     *
+     * @unauthenticated
+     */
+    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
+    {
+        return $this->authService->forgotPassword($request->validated())->toJson();
+    }
+
+    /**
+     * Verify the password reset OTP.
+     *
+     * @bodyParam pending_token string required The token from forgot password response. Example: x8kL3mN9pQ2rV7wZ5tY1bC4dF6gH0jS
+     * @bodyParam otp string required The 6-digit OTP sent to the email. Example: 111111
+     *
+     * @response 200 scenario="Success" {
+     *     "code": 200,
+     *     "message": "OTP verified. You may now reset your password.",
+     *     "data": {
+     *         "reset_token": "aB3cD5eF7gH9iJ1kL2mN4oP6qR8sT0uV"
+     *     }
+     * }
+     * @response 400 scenario="Invalid OTP" {
+     *     "code": 400,
+     *     "message": "Invalid or expired OTP code."
+     * }
+     *
+     * @unauthenticated
+     */
+    public function verifyPasswordOtp(VerifyOtpRequest $request): JsonResponse
+    {
+        return $this->authService->verifyPasswordOtp($request->validated())->toJson();
+    }
+
+    /**
+     * Reset password with the verified reset token.
+     *
+     * @bodyParam reset_token string required The token from OTP verification. Example: aB3cD5eF7gH9iJ1kL2mN4oP6qR8sT0uV
+     * @bodyParam password string required New password (min 8 chars, at least 1 uppercase, 1 digit). Must be confirmed. Example: NewPass1
+     * @bodyParam password_confirmation string required Must match password. Example: NewPass1
+     *
+     * @response 200 scenario="Success" {
+     *     "code": 200,
+     *     "message": "Password reset successfully. Please log in with your new password."
+     * }
+     * @response 400 scenario="Invalid Token" {
+     *     "code": 400,
+     *     "message": "Invalid or expired token."
+     * }
+     *
+     * @unauthenticated
+     */
+    public function resetPassword(ResetPasswordRequest $request): JsonResponse
+    {
+        return $this->authService->resetPassword($request->validated())->toJson();
+    }
+
+    /**
+     * Verify the authenticated admin's email.
+     *
+     * @bodyParam otp string required The 6-digit OTP sent to the email. Example: 111111
+     *
+     * @response 200 scenario="Success" {
+     *     "code": 200,
+     *     "message": "Email verified successfully.",
+     *     "data": {
+     *         "user": {
+     *             "id": "01953801-eeee-1234-5678-1234567890ef",
+     *             "first_name": "Admin",
+     *             "last_name": "User",
+     *             "other_name": null,
+     *             "email": "admin@example.com",
+     *             "phone_no": "+2348012345678",
+     *             "profile_image": null,
+     *             "gender": "MALE",
+     *             "status": "ACTIVE",
+     *             "full_name": "Admin User",
+     *             "role": ["ADMIN"],
+     *             "email_verified_at": "2026-07-21 15:35:00",
+     *             "two_factor_confirmed_at": null,
+     *             "created_at": "2026-07-20 09:00:00"
+     *         }
+     *     }
+     * }
+     * @response 208 scenario="Already Verified" {
+     *     "code": 208,
+     *     "message": "Email is already verified.",
+     *     "data": {
+     *         "user": { ... }
+     *     }
+     * }
+     * @response 400 scenario="Invalid OTP" {
+     *     "code": 400,
+     *     "message": "Invalid or expired OTP code."
+     * }
+     *
+     * @authenticated
+     */
+    public function verifyEmail(VerifyEmailRequest $request): JsonResponse
+    {
+        return $this->authService->verifyEmail($request->validated())->toJson();
+    }
+
+    /**
+     * Resend the email verification OTP.
+     *
+     * @response 200 {
+     *     "code": 200,
+     *     "message": "Verification code resent. Please check your email."
+     * }
+     * @response 208 scenario="Already Verified" {
+     *     "code": 208,
+     *     "message": "Email is already verified.",
+     *     "data": {
+     *         "user": { ... }
+     *     }
+     * }
+     *
+     * @authenticated
+     */
+    public function resendVerificationEmail(): JsonResponse
+    {
+        return $this->authService->resendVerificationEmail()->toJson();
+    }
+
+    /**
+     * Update the authenticated admin's email.
+     *
+     * The new email is marked unverified. A verification OTP is sent to the new address.
+     *
+     * @bodyParam email string required The new email address. Example: newadmin@example.com
+     *
+     * @response 200 {
+     *     "code": 200,
+     *     "message": "Verification OTP sent. Please check your inbox."
+     * }
+     * @response 422 scenario="Duplicate Email" {
+     *     "message": "The given data was invalid.",
+     *     "errors": {
+     *         "email": ["The email has already been taken."]
+     *     }
+     * }
+     *
+     * @authenticated
+     */
+    public function updateEmail(UpdateEmailRequest $request): JsonResponse
+    {
+        return $this->authService->updateEmail($request->validated())->toJson();
+    }
+
+    /**
+     * Initiate a password change for the authenticated admin.
+     *
+     * Sends a verification OTP to the admin's email.
+     *
+     * @response 200 {
+     *     "code": 200,
+     *     "message": "Verification OTP sent. Please check your email to confirm the password change.",
+     *     "data": {
+     *         "pending_token": "x8kL3mN9pQ2rV7wZ5tY1bC4dF6gH0jS"
+     *     }
+     * }
+     *
+     * @authenticated
+     */
+    public function initiatePasswordChange(): JsonResponse
+    {
+        return $this->authService->initiatePasswordChange()->toJson();
+    }
+
+    /**
+     * Verify OTP for admin password change.
+     *
+     * @bodyParam pending_token string required The token from initiate password change. Example: x8kL3mN9pQ2rV7wZ5tY1bC4dF6gH0jS
+     * @bodyParam otp string required The 6-digit OTP sent to the email. Example: 111111
+     *
+     * @response 200 scenario="Success" {
+     *     "code": 200,
+     *     "message": "OTP verified. You may now set your new password.",
+     *     "data": {
+     *         "reset_token": "aB3cD5eF7gH9iJ1kL2mN4oP6qR8sT0uV"
+     *     }
+     * }
+     * @response 400 scenario="Invalid OTP" {
+     *     "code": 400,
+     *     "message": "Invalid or expired OTP code."
+     * }
+     *
+     * @authenticated
+     */
+    public function verifyPasswordChangeOtp(VerifyOtpRequest $request): JsonResponse
+    {
+        return $this->authService->verifyPasswordChangeOtp($request->validated())->toJson();
+    }
+
+    /**
+     * Confirm the admin password update.
+     *
+     * Current session stays active (unlike password reset).
+     *
+     * @bodyParam reset_token string required The token from OTP verification. Example: aB3cD5eF7gH9iJ1kL2mN4oP6qR8sT0uV
+     * @bodyParam password string required New password (min 8 chars, at least 1 uppercase, 1 digit). Must be confirmed. Example: NewPass1
+     * @bodyParam password_confirmation string required Must match password. Example: NewPass1
+     *
+     * @response 200 {
+     *     "code": 200,
+     *     "message": "Password updated successfully."
+     * }
+     *
+     * @authenticated
+     */
+    public function confirmPasswordUpdate(ResetPasswordRequest $request): JsonResponse
+    {
+        return $this->authService->confirmPasswordUpdate($request->validated())->toJson();
+    }
+
+    /**
+     * Generate a new 2FA secret for the admin.
+     *
+     * Returns a TOTP secret and QR code URL for the authenticator app.
+     *
+     * @response 200 {
+     *     "code": 200,
+     *     "message": "Scan the QR code with your authenticator app, then confirm with a code.",
+     *     "data": {
+     *         "qr_code_url": "otpauth://totp/SHELFIE:admin@example.com?secret=JBSWY3DPEHPK3PXP&issuer=SHELFIE",
+     *         "secret": "JBSWY3DPEHPK3PXP"
+     *     }
+     * }
+     *
+     * @authenticated
+     */
+    public function setupTwoFactor(): JsonResponse
+    {
+        return $this->authService->setupTwoFactor()->toJson();
+    }
+
+    /**
+     * Confirm and activate two-factor authentication for the admin.
+     *
+     * @bodyParam code string required The 6-digit TOTP code from the authenticator app. Example: 123456
+     *
+     * @response 200 scenario="Success" {
+     *     "code": 200,
+     *     "message": "Two-factor authentication enabled successfully."
+     * }
+     * @response 422 scenario="Invalid Code" {
+     *     "code": 422,
+     *     "message": "Invalid authentication code."
+     * }
+     *
+     * @authenticated
+     */
+    public function confirmTwoFactor(ConfirmTwoFactorRequest $request): JsonResponse
+    {
+        return $this->authService->confirmTwoFactor($request->validated())->toJson();
+    }
+
+    /**
+     * Disable two-factor authentication for the admin.
+     *
+     * @bodyParam code string required The 6-digit TOTP code from the authenticator app. Example: 123456
+     *
+     * @response 200 scenario="Success" {
+     *     "code": 200,
+     *     "message": "Two-factor authentication disabled successfully."
+     * }
+     * @response 422 scenario="Invalid Code" {
+     *     "code": 422,
+     *     "message": "Invalid authentication code."
+     * }
+     *
+     * @authenticated
+     */
+    public function disableTwoFactor(DisableTwoFactorRequest $request): JsonResponse
+    {
+        return $this->authService->disableTwoFactor($request->validated())->toJson();
+    }
+
+    /**
+     * Complete two-factor authentication during admin login.
+     *
+     * @bodyParam challenge_token string required The challenge token from login response. Example: 550e8400-e29b-41d4-a716-446655440001
+     * @bodyParam method string required Verification method. Must be "totp" or "email". Example: totp
+     * @bodyParam code string required The 6-digit code (TOTP or email OTP). Example: 123456
+     *
+     * @response 200 scenario="Success" {
+     *     "code": 200,
+     *     "message": "Authentication successful.",
+     *     "data": {
+     *         "user": {
+     *             "id": "01953801-eeee-1234-5678-1234567890ef",
+     *             "first_name": "Admin",
+     *             "last_name": "User",
+     *             "other_name": null,
+     *             "email": "admin@example.com",
+     *             "phone_no": "+2348012345678",
+     *             "profile_image": null,
+     *             "gender": "MALE",
+     *             "status": "ACTIVE",
+     *             "full_name": "Admin User",
+     *             "role": ["ADMIN"],
+     *             "email_verified_at": "2026-07-21 10:00:00",
+     *             "two_factor_confirmed_at": "2026-07-21 16:00:00",
+     *             "created_at": "2026-07-20 09:00:00"
+     *         },
+     *         "token": "1|ghi789abc123def456jkl789mno012pqr",
+     *         "roles": ["ADMIN"],
+     *         "permissions": ["view_users", "edit_users", "view_reports"]
+     *     }
+     * }
+     * @response 401 scenario="Invalid Challenge" {
+     *     "code": 401,
+     *     "message": "Invalid or expired challenge token."
+     * }
+     * @response 422 scenario="Invalid Code" {
+     *     "code": 422,
+     *     "message": "Invalid authentication code."
+     * }
+     *
+     * @unauthenticated
+     */
+    public function verifyTwoFactor(VerifyTwoFactorRequest $request): JsonResponse
+    {
+        return $this->authService->verifyTwoFactor($request->validated())->toJson();
+    }
+
+    /**
+     * Resend a 2FA email OTP for admin login.
+     *
+     * @bodyParam challenge_token string required The challenge token from login response. Example: 550e8400-e29b-41d4-a716-446655440001
+     *
+     * @response 200 {
+     *     "code": 200,
+     *     "message": "A verification code has been sent to your email."
+     * }
+     * @response 401 scenario="Invalid Challenge" {
+     *     "code": 401,
+     *     "message": "Invalid or expired challenge token."
+     * }
+     *
+     * @unauthenticated
+     */
+    public function resendTwoFactorEmail(Request $request): JsonResponse
+    {
+        return $this->authService->resendTwoFactorEmail($request->validate([
+            'challenge_token' => ['required', 'string', 'uuid'],
+        ]))->toJson();
+    }
+
+    /**
+     * Delete the authenticated admin's account.
+     *
+     * @bodyParam password string required The current password for confirmation. Example: Password1
+     *
+     * @response 200 {
+     *     "code": 200,
+     *     "message": "Your account has been deleted successfully."
+     * }
+     *
+     * @authenticated
+     */
+    public function deleteAccount(DeleteAccountRequest $request): JsonResponse
+    {
+        return $this->authService->deleteAccount($request->validated())->toJson();
+    }
+
+    /**
+     * Export the authenticated admin's personal data.
+     *
+     * @response 200 {
+     *     "code": 200,
+     *     "data": {
+     *         "user": {
+     *             "id": "01953801-eeee-1234-5678-1234567890ef",
+     *             "first_name": "Admin",
+     *             "last_name": "User",
+     *             "other_name": null,
+     *             "email": "admin@example.com",
+     *             "phone_no": "+2348012345678",
+     *             "profile_image": null,
+     *             "gender": "MALE",
+     *             "status": "ACTIVE",
+     *             "full_name": "Admin User",
+     *             "role": ["ADMIN"],
+     *             "email_verified_at": "2026-07-21 10:00:00",
+     *             "two_factor_confirmed_at": null,
+     *             "created_at": "2026-07-20 09:00:00"
+     *         },
+     *         "data": {
+     *             "id": "01953801-eeee-1234-5678-1234567890ef",
+     *             "first_name": "Admin",
+     *             "last_name": "User",
+     *             "other_name": null,
+     *             "email": "admin@example.com",
+     *             "phone_no": "+2348012345678",
+     *             "profile_image": null,
+     *             "gender": "MALE",
+     *             "status": "ACTIVE",
+     *             "email_verified_at": "2026-07-21 10:00:00",
+     *             "two_factor_confirmed_at": null,
+     *             "created_at": "2026-07-20 09:00:00",
+     *             "updated_at": "2026-07-21 15:00:00",
+     *             "roles": [...],
+     *             "permissions": [...]
+     *         }
+     *     }
+     * }
+     *
+     * @authenticated
+     */
+    public function exportData(): JsonResponse
+    {
+        return $this->authService->exportData()->toJson();
+    }
+}
