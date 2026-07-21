@@ -10,10 +10,20 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "knuckleswtf/scribe": "^5.11",
+        "kreait/firebase-php": "^8.3",
+        "l0n3ly/laravel-dynamic-helpers": "^2.0",
+        "l0n3ly/laravel-repository-with-service": "^2.0",
         "laravel/framework": "^13.8",
-        "laravel/tinker": "^3.0"
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^3.0",
+        "league/flysystem-aws-s3-v3": "^3.35",
+        "pragmarx/google2fa-laravel": "^3.0",
+        "spatie/laravel-permission": "^8.3",
+        "yabacon/paystack-php": "^2.2"
     },
     "require-dev": {
+        "brianium/paratest": "^7.20",
         "fakerphp/faker": "^1.23",
         "laravel/boost": "^2.2",
         "laravel/pail": "^1.2.5",

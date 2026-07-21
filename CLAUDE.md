@@ -49,6 +49,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - php - 8.3
 - laravel/framework (LARAVEL) - v13
 - laravel/prompts (PROMPTS) - v0
+- laravel/sanctum (SANCTUM) - v4
 - laravel/boost (BOOST) - v2
 - laravel/mcp (MCP) - v0
 - laravel/pail (PAIL) - v1
@@ -195,5 +196,99 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - To run all tests: `php artisan test --compact`.
 - To run all tests in a file: `php artisan test --compact tests/Feature/ExampleTest.php`.
 - To filter on a particular test name: `php artisan test --compact --filter=testName` (recommended after making a change to a related file).
+
+=== l0n3ly/laravel-dynamic-helpers rules ===
+
+# Laravel Dynamic Helpers
+
+## Helper Classes
+
+- All helpers live in `app/Helpers/` directory and extend `L0n3ly\LaravelDynamicHelpers\Helper`
+- Helper class names use PascalCase with "Helper" suffix: `MoneyHelper`, `PermissionHelper`
+- One responsibility per helper — don't mix concerns
+
+## Function Registration
+
+- Functions are automatically registered at service provider boot time with proper type hints
+- File paths convert to function names: `Store/CreateHelper.php` → `storeCreateHelper()` function
+- All registered functions have return type hints: `function moneyHelper(): \App\Helpers\MoneyHelper`
+- Use direct function calls: `moneyHelper()->format()` instead of `helpers()->moneyHelper()->format()`
+
+## Creating Helpers
+
+```bash
+php artisan make:helper MoneyHelper
+php artisan make:helper Store/CreateHelper
+```
+
+No additional commands needed — functions auto-register immediately.
+
+## Public Methods
+
+- All public methods become callable via the function: `public function format()` → `moneyHelper()->format()`
+- Private/protected methods are internal use only
+- Add type hints to all method parameters and return types
+
+## Dependency Injection
+
+- Use constructor property promotion for dependencies: `public function __construct(protected CurrencyRepository $currencies) {}`
+- Container automatically resolves injected dependencies
+- Helpers are singletons — instantiated once per request
+
+## Organizing Helpers
+
+- Use subdirectories to organize related helpers: `Admin/`, `Store/`, `Report/`
+- Keep directory structure shallow (2-3 levels max)
+- Group by feature/domain: `Store/CartHelper`, `Store/CheckoutHelper`, not scattered separately
+
+=== l0n3ly/laravel-repository-with-service rules ===
+
+# Repository + Service Pattern
+
+This package scaffolds the Repository + Service pattern for Laravel with automatic container binding and code
+generation. Use repositories for data access and services for business logic orchestration.
+
+## Quick Overview
+
+- **Purpose**: Generate repositories and services, auto-bind implementations, standardize data/business layers.
+- **Location**: repositories in `app/Repositories`, services in `app/Services`.
+- **Naming**: `Repository` / `Service` interfaces; `RepositoryImplement` / `ServiceImplement` implementations.
+
+## Common Commands
+
+```bash
+php artisan make:model User --all
+php artisan make:repository Post --service --api
+php artisan make:service Order --api
+```
+
+## Data Access Methods
+
+Repositories provide these core methods for data access:
+
+- `all()` - Return all records
+- `find($id)` - Find by ID
+- `findOrFail($id)` - Find or throw exception
+- `create($data)` - Create new record
+- `update($id, $data)` - Update record (returns Model)
+- `delete($id)` - Delete single record
+- `destroy(array $ids)` - Delete multiple records
+- `query()` - Get fresh query builder
+- `updateOrCreate($where, $values)` - Update or create
+- `firstOrCreate($where, $values)` - Find or create
+
+## Service Conventions
+
+- Inject repositories via constructor
+- Use `ResultService` trait for API responses
+- Wrap operations in try-catch
+- Keep business logic separate from data access
+- Type all parameters and return values
+
+## Documentation
+
+Full documentation available:
+- In package: `vendor/l0n3ly/laravel-repository-with-service/docs/`
+- Online: https://github.com/l0n3ly/laravel-repository-with-service
 
 </laravel-boost-guidelines>
