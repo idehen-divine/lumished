@@ -2,9 +2,9 @@
 # Local test environment variables for deploy.sh
 # DO NOT COMMIT — add to .gitignore if not already covered
 
-export DEPLOY_DIR="/home/l0n3ly/Documents/dev/Fleet_Res/Fleet_BE"
-export SHARED_DIR="/home/l0n3ly/Documents/dev/Fleet_Res/Fleet_BE"
-export DATA_DIR="/home/l0n3ly/Documents/dev/Fleet_Res/data"
+export DEPLOY_DIR="/home/l0n3ly/Documents/dev/Lawal_Res/SHELFIE"
+export SHARED_DIR="/home/l0n3ly/Documents/dev/Lawal_Res/SHELFIE"
+export DATA_DIR="/home/l0n3ly/Documents/dev/Lawal_Res/data"
 export MIGRATE_CMD="migrate:fresh --seed"
 
 # App
@@ -40,7 +40,7 @@ export MAIL_PASSWORD="null"
 export AWS_ACCESS_KEY_ID="minioadmin"
 export AWS_SECRET_ACCESS_KEY="minioadmin"
 export AWS_DEFAULT_REGION="us-east-1"
-export AWS_BUCKET="fleet-local"
+export AWS_BUCKET="shelfie-local"
 export AWS_ENDPOINT="http://shelfie-minio:9000"
 export MINIO_ROOT_USER="minioadmin"
 export MINIO_ROOT_PASSWORD="minioadmin"
