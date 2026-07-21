@@ -241,11 +241,11 @@ services:
       - .:/var/www/html
       - /var/www/html/vendor
       - ./storage/logs:/var/www/html/storage/logs
-    scheduler:
-        volumes:
-            - .:/var/www/html
-            - /var/www/html/vendor
-            - ./storage/logs:/var/www/html/storage/logs
+  scheduler:
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/vendor
+      - ./storage/logs:/var/www/html/storage/logs
 EOF
     fi
 
