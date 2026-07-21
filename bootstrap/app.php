@@ -45,7 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $middleware->group('api', [
-            // 'throttle:api',
+            'throttle:api',
             SubstituteBindings::class,
             ForceJsonResponse::class,
         ]);
@@ -94,7 +94,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        $exceptions->shouldRenderJsonWhen(function (Request $request, \Throwable $e) {
+        $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
             if ($request->is('api/*')) {
                 return true;
             }
