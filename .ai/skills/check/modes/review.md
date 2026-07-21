@@ -10,7 +10,7 @@ Your role: the senior reviewer with fresh eyes, the one who didn't write the cod
 - Read only on code: produces findings, never edits the code under review.
 - Want a different provider? For the most independent review, switch your active model (`/model`, or your other AI tool) and run the review there; a recommendation, not machinery. The skill never sends your code anywhere itself.
 
-Owns review findings (`docs/reviews/`). Does not write code, tests, specs, or the `AGENTS.md`/`CLAUDE.md` context files.
+Owns review findings (`docs/reviews/`). Does not write code, tests, specs, or the `MEMORY.md`/`MEMORY.md` context files.
 
 ## Asks vs acts
 
@@ -95,10 +95,10 @@ If the change set is empty: stop and tell the engineer there's nothing to review
 
 Paths and cheap signals only; the subagent reads on demand. Using your file tools: list the 3 most-recent spec files under `docs/specs/` (paths only), and resolve the test signal, one of three states, not a yes/no:
 - `TESTS = configured`: `test-preferences.json` sets `"tool"` to a framework (a runner is set up). Judge test adequacy normally.
-- `TESTS = none-by-design`: `test-preferences.json` has `"tool": null` and a `"gate"` (e.g. `"typecheck+verify"`), or the nearest `AGENTS.md`/governing spec states a "no test runner" convention. Deliberate: the gate is typecheck + `/check verify`, not a suite.
+- `TESTS = none-by-design`: `test-preferences.json` has `"tool": null` and a `"gate"` (e.g. `"typecheck+verify"`), or the nearest `MEMORY.md`/governing spec states a "no test runner" convention. Deliberate: the gate is typecheck + `/check verify`, not a suite.
 - `TESTS = none-yet`: no `test-preferences.json` at all, and no stated convention. A genuine gap.
 
-Pass to the subagent: project-context contents inline (read `AGENTS.md`, canonical, or `CLAUDE.md` as fallback; short), the 3 recent spec paths, the base ref / merge-base, and the diff scope. The subagent reads specs only if they govern the changed code, runs `git diff` itself, and reads the changed files and their tests.
+Pass to the subagent: project-context contents inline (read `MEMORY.md`, canonical, or `MEMORY.md` as fallback; short), the 3 recent spec paths, the base ref / merge-base, and the diff scope. The subagent reads specs only if they govern the changed code, runs `git diff` itself, and reads the changed files and their tests.
 
 ### 4. Spawn the review subagent: on the contrasting Claude model
 
@@ -110,7 +110,7 @@ Resolve this skill's folder to an absolute path (you, the main agent, already re
 - `prompt`: the absolute path to `review-agent-prompt.md` (Read it first, then follow it), plus `Placeholder values:`, a labeled list supplying:
   1. `REVIEW_GUIDE`: the absolute path to `review-guide.md` (the subagent reads it as its rubric)
   2. Diff scope: `MODE`, `BASE`, `MERGE_BASE`, and the changed-file list with the exact `git diff` command to run
-  3. Project-context contents (inline), `AGENTS.md` or `CLAUDE.md` fallback, the conventions the review must enforce
+  3. Project-context contents (inline), `MEMORY.md` or `MEMORY.md` fallback, the conventions the review must enforce
   4. Recent spec paths (read if relevant), or inline the relevant spec text if your client gives subagents no file access
   5. The test signal (`configured` / `none-by-design` / `none-yet`) so it judges test adequacy correctly; never nag for tests on a `none-by-design` project
   6. Output path for findings: `docs/reviews/<date>-<branch>.md`

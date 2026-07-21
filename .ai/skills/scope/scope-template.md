@@ -42,7 +42,7 @@ Spec 0001 · code in `./`
 
 ### 2. Coding standards & tooling
 Capture conventions, then install lint, format, and pre-commit enforcement from the real scaffolded project.
-**Done when:** root `AGENTS.md` reflects the real stack, and lint/format/pre-commit run clean.
+**Done when:** root `MEMORY.md` reflects the real stack, and lint/format/pre-commit run clean.
 - [ ] Capture conventions + tooling choices: `/audit`
 - [ ] Install the tooling: `/develop tooling`
 - [ ] Check it runs clean: `/test`
@@ -100,7 +100,7 @@ Out of scope for the current build pass, kept so the plan stays honest.
 | `in-progress` (designed) | **`/architect` at spec capture** | `Design it` ticked; spec linked; `Build it: /develop <feature>` + **2 to 5 milestones rolled up from the spec**; `Verify it` + `Test it` boxes; any surfaced follow-up enrolled |
 | `in-progress` (building) | `/develop` | milestone sub-boxes tick one by one; code pointer filled |
 | `in-progress` (verified) | `/check verify` | `Build it` + milestones ticked; `Verify it` ticked |
-| `done` | the tier's last required stage (`Vibe` → `/develop`; `Lean` → `/check verify`; `Medium`/`Full` → `/test`), then `/sync` | the tier's required boxes ticked; `/sync` captures the slice's conventions into `AGENTS.md` |
+| `done` | the tier's last required stage (`Vibe` → `/develop`; `Lean` → `/check verify`; `Medium`/`Full` → `/test`), then `/sync` | the tier's required boxes ticked; `/sync` captures the slice's conventions into `MEMORY.md` |
 
 - **Next step** = the first unticked box (always a command or a tracked milestone).
 - **needs a decision** = run `/architect` first; otherwise straight to `/develop` (or `/audit` for standards & tooling). The tag drops once the spec is captured.
@@ -142,7 +142,7 @@ When `scope.md` outgrows a comfortable scan (roughly a dozen plus features acros
 **Scope file**: <docs/scope/scope.md> (<created new | updated in place | new epic file for <area>>)
 **Scope (this pass)**: <N> new features to build, <M> already on the scope, <K> deferred
 **Build order**: <feature 1> → <feature 2> → …
-**First step**: <run `/clear` first, then the first unticked box, usually `/architect <first feature>` (or `/audit` if a brownfield repo has no root AGENTS.md), each skill reads its inputs from the files just written, so a fresh session keeps every step cheap>
+**First step**: <run `/clear` first, then the first unticked box, usually `/architect <first feature>` (or `/audit` if a brownfield repo has no root MEMORY.md), each skill reads its inputs from the files just written, so a fresh session keeps every step cheap>
 ```
 
-_Context hygiene: the scope, the specs, and `AGENTS.md` are the durable state, so the workflow hands off through files, not the chat. Advise `/clear` between units (after `/scope`, after each `/architect`, between features) and `/compact` mid unit if one run gets long. On Claude Code use `/clear` / `/compact`; use your agent's fresh session equivalent elsewhere._
+_Context hygiene: the scope, the specs, and `MEMORY.md` are the durable state, so the workflow hands off through files, not the chat. Advise `/clear` between units (after `/scope`, after each `/architect`, between features) and `/compact` mid unit if one run gets long. On Claude Code use `/clear` / `/compact`; use your agent's fresh session equivalent elsewhere._

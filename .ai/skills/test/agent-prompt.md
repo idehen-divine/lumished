@@ -41,7 +41,7 @@ SCOPE_CLASSIFIED
 - app/api/orders/route.ts       [api/server]
 -->
 
-## Project context (AGENTS.md, inlined because it is short)
+## Project context (MEMORY.md, inlined because it is short)
 
 PROJECT_CONTEXT
 

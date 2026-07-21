@@ -25,7 +25,7 @@ TEMPLATE_CONTENT
 
 ## Context
 
-- **Project (AGENTS.md, inlined)**: PROJECT_CONTEXT
+- **Project (MEMORY.md, inlined)**: PROJECT_CONTEXT
 - **Recent spec paths (the "why", read only if you need the rationale)**: SPEC_PATHS
 - **Today**: DATE
 

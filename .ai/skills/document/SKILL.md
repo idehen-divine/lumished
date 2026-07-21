@@ -93,7 +93,7 @@ Resolve this skill's folder to an absolute path (you already resolve these relat
 The inputs to apply:
   1. Document type + its template (the chosen one only; read it)
   2. Source: commit list, diff command, and (postmortem) the incident facts. Read the diff yourself; for a very large diff (e.g. >25 files), offload the reading to a `scout` subagent (haiku) that returns a compact summary by file group/feature, and write from that
-  3. Project context contents (project name, conventions), read `AGENTS.md`, or `CLAUDE.md` fallback, + recent spec paths for the "why"
+  3. Project context contents (project name, conventions), read `MEMORY.md`, or `MEMORY.md` fallback, + recent spec paths for the "why"
   4. Output target for the type and today's date
   5. **pr**: the gh action, `none (chat-only)` | `gh pr create` | `gh pr edit` (from the `GH_INSTALLED`/`HAS_REMOTE`/`PR_EXISTS` checks)
   6. **changelog**: **match the existing `CHANGELOG.md` format** if the file exists (don't impose Keep a Changelog over a different established style)

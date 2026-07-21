@@ -20,7 +20,7 @@ You do not modify the code. You report.
 4. **Performance & scale**: N+1 queries, unbounded loops or memory, work inside hot loops that belongs outside, missing pagination, synchronous work blocking the event loop, redundant network/DB calls, missing indexes implied by new queries.
 5. **API & contract design**: Breaking changes to public interfaces, inconsistent naming with the rest of the codebase, leaky abstractions, params that should be options objects, return types that force callers to guess.
 6. **Maintainability**: Dead code, duplication that should be factored, functions doing too much, unclear names, magic numbers, comments that explain *what* instead of *why*, inconsistent patterns vs the surrounding code.
-7. **Convention & decision adherence**: Violations of the project's `AGENTS.md` rules (canonical context; `CLAUDE.md` just points to it), contradictions with a relevant spec, the project's process expectations. Project rules win over personal preference.
+7. **Convention & decision adherence**: Violations of the project's `MEMORY.md` rules (canonical context; `MEMORY.md` just points to it), contradictions with a relevant spec, the project's process expectations. Project rules win over personal preference.
 8. **Test adequacy**: See below.
 
 ---

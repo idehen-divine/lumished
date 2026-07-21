@@ -182,7 +182,7 @@ N. <Build task>, satisfies **AC-N**
      later; these links are here for a human to follow. -->
 
 **Project sources** (verifiable, in this repo):
-- <e.g. `AGENTS.md`, the auth convention · spec 0003 · an installed community skill · already on the project's BaaS>
+- <e.g. `MEMORY.md`, the auth convention · spec 0003 · an installed community skill · already on the project's BaaS>
 
 **Practices & standards**:
 - <named practice/principle the decision rests on, e.g. idempotency keys for money ops · strangler pattern · OWASP session guidance>

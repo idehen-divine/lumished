@@ -26,7 +26,7 @@ Before choosing any technology, pick the right foundational pattern:
 
 For each layer, make a decision, state it, and justify it in one line. Do not hedge.
 
-Reason in the durable CATEGORY, then pick the current product fresh. The table names the category/mechanism (the durable advice); this space rots fast, so select the actual product fresh and current at runtime: prefer whatever the project's `AGENTS.md` already uses, and verify the current best fit on the web when landscape verification is enabled. Do not treat any parenthetical example as a fixed recommendation.
+Reason in the durable CATEGORY, then pick the current product fresh. The table names the category/mechanism (the durable advice); this space rots fast, so select the actual product fresh and current at runtime: prefer whatever the project's `MEMORY.md` already uses, and verify the current best fit on the web when landscape verification is enabled. Do not treat any parenthetical example as a fixed recommendation.
 
 | Layer | Default category unless evidence says otherwise (e.g. as of training) |
 |---|---|
@@ -45,7 +45,7 @@ Reason in the durable CATEGORY, then pick the current product fresh. The table n
 - **Serverless for APIs has real tradeoffs.** Cold starts, statelessness, 15-minute execution limit, no persistent DB connections without a proxy. State these explicitly in the spec; it is not a free upgrade over a container.
 - **Defer multiple regions until required.** Active active across multiple regions is one of the hardest distributed systems problems. Do not recommend it before proven product market fit and the operational budget to run it.
 - **ORM for CRUD, SQL for complexity.** ORMs reduce boilerplate for standard CRUD. For reporting queries, aggregations, and complex joins, write SQL. Do not put complex logic in the ORM.
-- **Full container orchestration is for teams with a platform engineering function.** A small team operating an orchestration platform on its own burns a large share of its time on infrastructure instead of product. Until there are dedicated infra engineers, reach for a managed application platform that removes the orchestration burden; pick the current best fit for the stack (align with what `AGENTS.md` already uses), don't freeze a product name here.
+- **Full container orchestration is for teams with a platform engineering function.** A small team operating an orchestration platform on its own burns a large share of its time on infrastructure instead of product. Until there are dedicated infra engineers, reach for a managed application platform that removes the orchestration burden; pick the current best fit for the stack (align with what `MEMORY.md` already uses), don't freeze a product name here.
 
 **Step 4: Write the spec**
 

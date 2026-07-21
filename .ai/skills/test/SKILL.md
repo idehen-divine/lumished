@@ -16,7 +16,7 @@ Role: a senior test engineer writing the suite the code deserves, no more, no le
 
 Target: the code changed in this branch but not yet committed. Each changed file is classified (pure logic, component, API route, page/flow) and tested with the right strategy; tests verify real behavior and catch regressions, not coverage farming. The main thread writes the tests itself (a read only `scout` may do the heavy file reading for a large set); with a governing spec, tests trace to its acceptance criteria (Steps 7 and 8).
 
-Does not write application code. Does not update `AGENTS.md`/`CLAUDE.md` context files (/sync owns that).
+Does not write application code. Does not update `MEMORY.md`/`MEMORY.md` context files (/sync owns that).
 
 ## Asks vs acts
 
@@ -153,7 +153,7 @@ With file tools:
 - List the 3 most recently modified spec paths under `docs/specs/` (paths only).
 - Identify the governing spec: the feature dir `docs/specs/NNNN-<feature>/` (or single `docs/specs/NNNN-<feature>.md`) these files implement, matched by branch/feature name or touched surfaces (a `docs/scope/` entry, if present, points to it). Note its path and whether a `verify.md` sits beside it (`docs/specs/NNNN-<feature>/verify.md`). This contract is what tests trace to; it may not be among the 3 recent paths. Set `TRACE_TO_CONTRACT = yes` when a governing spec exists, else `no`.
 - Note whether `design.md` exists at the project root; use its path only when a **component** or **page/flow** file is in scope, else `none`.
-- Read `AGENTS.md` (canonical; `CLAUDE.md` if absent) as project context (short and cheap). Also note the build approach as one line: the slice shaping approach the team chose, recorded in the scope header (or root `AGENTS.md`), e.g. thin end to end path, thinnest usable whole core loop, UI first shell on placeholders, full user journey per phase. It doesn't branch the logic; it calibrates your judgment when writing (Step 8, rule a).
+- Read `MEMORY.md` (canonical; `MEMORY.md` if absent) as project context (short and cheap). Also note the build approach as one line: the slice shaping approach the team chose, recorded in the scope header (or root `MEMORY.md`), e.g. thin end to end path, thinnest usable whole core loop, UI first shell on placeholders, full user journey per phase. It doesn't branch the logic; it calibrates your judgment when writing (Step 8, rule a).
 - Read `package.json`, note `scripts.test`. `RUN_COMMAND` = `<pkgmgr> test` when a `test` script exists (`<pkgmgr> run test` for npm); a raw invocation (e.g. `pnpm exec vitest run`) only when none does.
 
 ---

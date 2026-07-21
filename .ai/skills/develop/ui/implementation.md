@@ -67,7 +67,7 @@ This is Pass 1 from the guide's bar: design before you integrate, and it is a ga
 
 A complete product screen has, cohesive and branded:
 - **Brand presence**: a logo or wordmark, used consistently. No asset: derive one from the product name (styled wordmark or simple mark); never leave the corner empty.
-- **Product context and copy**: real, product specific copy saying what this is and why, written from the product's purpose (`AGENTS.md`, the spec's intent, or the scope; never lorem ipsum): a headline or tagline, a supporting line, honest microcopy.
+- **Product context and copy**: real, product specific copy saying what this is and why, written from the product's purpose (`MEMORY.md`, the spec's intent, or the scope; never lorem ipsum): a headline or tagline, a supporting line, honest microcopy.
 - **A considered layout, not a lone box.** Compose the page as a whole. The same completeness applies to every page; the list below is a sample to calibrate on, not a checklist, and not the only pages treated. Reason about what a senior designer would ship for THIS screen and product:
   - **Auth (sign in / up):** a branded card, or two pane (brand, value proposition, and a visual on one side; the form on the other), secondary links (forgot password, switch mode, terms), often light social proof. Not a naked input box.
   - **Dashboard / feed:** an app shell (header with logo, primary nav, user menu), clear page title and context, main content with real hierarchy, a proper empty state.

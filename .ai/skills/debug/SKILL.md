@@ -68,7 +68,7 @@ Loop Steps 3 to 4 until a hypothesis is confirmed by evidence. **Never skip to a
 
 ### Step 5: Fix at the root
 
-Make the **minimal, targeted** change that addresses the proven cause. Don't fix the symptom (clamping the null), fix the cause (why it's null). Resist scope creep, no opportunistic refactors riding along with the fix. Follow the project's conventions (`AGENTS.md`, neighbouring code).
+Make the **minimal, targeted** change that addresses the proven cause. Don't fix the symptom (clamping the null), fix the cause (why it's null). Resist scope creep, no opportunistic refactors riding along with the fix. Follow the project's conventions (`MEMORY.md`, neighbouring code).
 
 ### Step 6: Verify and protect
 
@@ -83,7 +83,7 @@ For a hunt that is not trivial, spawn an investigation subagent so the iterative
 - `model`: set explicitly to a strong model, do not inherit the session model (Claude Code: `sonnet`)
 - `description: "Debug: <symptom>"`
 - Tools: `Read`, `Bash`, `Grep`, `Glob`, `Edit`, `Write`
-- `prompt`: this loop + the captured symptom + reproduction + the relevant `AGENTS.md` (inlined). Require it to report the root cause with evidence, not just "fixed it."
+- `prompt`: this loop + the captured symptom + reproduction + the relevant `MEMORY.md` (inlined). Require it to report the root cause with evidence, not just "fixed it."
 
 ### Report
 

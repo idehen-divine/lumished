@@ -31,7 +31,7 @@ DIFF_COMMAND
 ```
 <!-- e.g. branch mode: git diff <MERGE_BASE>    |    uncommitted mode: git diff HEAD (plus untracked files via git ls-files --others --exclude-standard, read those in full) -->
 
-## Project conventions (AGENTS.md, inlined, enforce these)
+## Project conventions (MEMORY.md, inlined, enforce these)
 
 PROJECT_CONTEXT
 
@@ -50,7 +50,7 @@ OUTPUT_PATH   (e.g. docs/reviews/2026-06-20-main.md, create the docs/reviews dir
 
 1. **Follow the Review guide above**, it's your rubric: what to inspect, the severity scale, how to judge test adequacy, and the exact findings format for both the file and your summary.
 2. Run the diff command to see exactly what changed. Read each changed file in full for context: a diff hunk alone hides the surrounding code that determines whether the change is correct.
-3. Read a spec path only if it governs the changed code. Check the change against AGENTS.md conventions.
+3. Read a spec path only if it governs the changed code. Check the change against MEMORY.md conventions.
 4. If `TEST_SIGNAL = configured`, check whether the change is actually covered, untested new logic is a finding. If `none-by-design`, skip test coverage findings entirely (the gate is typecheck + `/check verify`).
 5. Evaluate against every category in the guide. Assign a severity to each finding. Reach an overall verdict.
 6. Write the findings file at OUTPUT_PATH using the guide's format.

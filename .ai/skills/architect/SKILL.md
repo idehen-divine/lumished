@@ -35,7 +35,7 @@ A spec documenting already shipped work (the "already built" path, or a linked f
 
 **The `Assumed` status.** `/develop` may create a spec in status `Assumed` when the engineer chooses to build before a load bearing decision is deliberated (see spec 0001). It records the assumption the build used, not a deliberated decision, and it blocks the feature from `done`. Only `/architect` clears it, by ratifying (below). `/architect` never creates an `Assumed` spec; it only deliberates one that already exists.
 
-Writes no code. Never updates `AGENTS.md`/`CLAUDE.md` (/sync owns that).
+Writes no code. Never updates `MEMORY.md`/`MEMORY.md` (/sync owns that).
 
 ## Subagents (main thread writes; subagents only read, fetch, or cross check)
 
@@ -59,7 +59,7 @@ Never bundle a complete data model, full stack, or ready made acceptance criteri
 
 Recommendations align with the stack in use (on a BaaS, prefer its auth/storage over new external tools; reuse beats sprawl). Web or mobile alike: infer the platform, never assume web.
 
-That is the intent, not the procedure. How to actually run the questioning (phase by phase, batched rounds, what to grill on, what to infer from `AGENTS.md` instead of asking) lives in `internal/design-conversation.md`, which the Execution section below makes you read in full before you ask a single design question.
+That is the intent, not the procedure. How to actually run the questioning (phase by phase, batched rounds, what to grill on, what to infer from `MEMORY.md` instead of asking) lives in `internal/design-conversation.md`, which the Execution section below makes you read in full before you ask a single design question.
 
 ## Artifact ownership
 
@@ -107,10 +107,10 @@ Run these steps (the `git` commands are literal; everything else uses your agent
 - **Today's date**: use today's date (inject it into the spec).
 - **List existing specs in this location**: files named `NNNN-*.md` plus any `index.md` in `$SPEC_DIR`, for numbering (per location) and related decision detection.
 - **Count source files** (e.g. `.ts`, `.tsx`, `.js`, `.py`, `.go`, `.rs`, `.java`), excluding `node_modules/`, `.git/`, `dist/`. Informs how much code there is to read, and whether to offload that reading to a `scout` subagent.
-- **Read project context**, the source of truth for the stack and community skills: root `AGENTS.md` (fall back to `CLAUDE.md`, else MISSING), plus the nested `<area>/AGENTS.md` for this feature's area if one exists (e.g. `src/auth/AGENTS.md` for an auth feature).
-- **Read the build approach for THIS feature**: the delivery strategy that governs how the spec's `## Build plan` is ordered and sliced. Precedence: this feature's scope row `Approach` override if declared, else the project default (root `AGENTS.md` first, else the scope header in `docs/scope/`). A feature with its own approach is built by ITS approach; others use the project default. The family: **Tracer Bullet** (thin vertical slices end to end through every layer), **Skateboard** (thinnest usable whole first, then grow), **Facade** (UI shell first, wire the backend later, a prototype path), **Journey** (one complete user path per phase), or a project specific variant. If neither records one, note the assumption and set the default by Staff/Principal judgment (prefer end to end / Tracer Bullet slices for production work). Carry what you find into the spec. Reason about what the approach implies for this feature; no fixed per approach recipe. The four approaches imply materially different `## Build plan` orderings, not the same order relabeled: Facade leads with the UI shell on placeholder data and defers the migration; Journey completes one user path's tasks fully before another's; Tracer Bullet stands up a thin end to end thread first, then thickens; Skateboard builds the smallest usable slice. Let the recorded approach visibly shape the ordering.
+- **Read project context**, the source of truth for the stack and community skills: root `MEMORY.md` (fall back to `MEMORY.md`, else MISSING), plus the nested `<area>/MEMORY.md` for this feature's area if one exists (e.g. `src/auth/MEMORY.md` for an auth feature).
+- **Read the build approach for THIS feature**: the delivery strategy that governs how the spec's `## Build plan` is ordered and sliced. Precedence: this feature's scope row `Approach` override if declared, else the project default (root `MEMORY.md` first, else the scope header in `docs/scope/`). A feature with its own approach is built by ITS approach; others use the project default. The family: **Tracer Bullet** (thin vertical slices end to end through every layer), **Skateboard** (thinnest usable whole first, then grow), **Facade** (UI shell first, wire the backend later, a prototype path), **Journey** (one complete user path per phase), or a project specific variant. If neither records one, note the assumption and set the default by Staff/Principal judgment (prefer end to end / Tracer Bullet slices for production work). Carry what you find into the spec. Reason about what the approach implies for this feature; no fixed per approach recipe. The four approaches imply materially different `## Build plan` orderings, not the same order relabeled: Facade leads with the UI shell on placeholder data and defers the migration; Journey completes one user path's tasks fully before another's; Tracer Bullet stands up a thin end to end thread first, then thickens; Skateboard builds the smallest usable slice. Let the recorded approach visibly shape the ordering.
 - **Locate the linked scope feature (if any):** cheaply scan `docs/scope/` filenames/headings (including per workspace subdirs) for a feature matching this topic; open only the single scope file containing it (`scope.md`, or the matching `<epic>.md` in a split). If found, read that row's intent plus any acceptance criteria seeds (they seed Stage (a)) and remember the file/row for the derive tasks and linking steps; this also settles feature linked vs standalone status. If no row matches, note the standalone decision path and don't create one now.
-- **(Optional)** list installed skills dirs for availability only (`.claude/skills/`, `.agents/skills/`, `skills/`). Relevance is decided by AGENTS.md plus the feature, not name matching.
+- **(Optional)** list installed skills dirs for availability only (`.claude/skills/`, `.agents/skills/`, `skills/`). Relevance is decided by MEMORY.md plus the feature, not name matching.
 
 From the spec list (paths relative to `$SPEC_DIR`):
 - **Next number**: highest existing + 1, zero padded to 4 digits; `0001` if none (an umbrella directory counts as one number). Collision guard (teams): list again `$SPEC_DIR` immediately before you write; if the chosen `NNNN` exists, bump to the next free number. Never overwrite an existing spec; after writing, confirm no concurrent run took the same number.
@@ -122,11 +122,11 @@ From the spec list (paths relative to `$SPEC_DIR`):
 - **Update/supersede detection**: if an existing spec clearly overlaps the topic (same domain, system, decision), before the staged conversation present a decision panel (plain text options where the agent has no picker; the picker adds Other automatically): "I found an existing spec that may overlap: `[path]`, [title]. How should I treat this?", options: **New decision (create a new spec)** · **Update the existing spec in place** · **Supersede it (a new spec replaces it)**. Default to the "(recommended)" option by overlap strength (nearly identical → Update or Supersede; adjacent → New). On update/supersede: set OPERATION, read the existing spec in full, and skip the staged conversation for in place updates.
   - **Assumed spec found**: if the overlapping spec's `**Status**:` is `Assumed`, this is a ratify, not the panel above. Follow *Ratify an assumed decision* (run the design conversation, then either fill in the real content and clear `Assumed`, or supersede if the assumption was wrong).
 
-**Community skills** come from the project's `AGENTS.md`, never a hardcoded name table (names and stacks change). Project wide skills/conventions live in root `AGENTS.md`, area specific ones in the nested `<area>/AGENTS.md` (maintained by `/audit` and `/sync`):
+**Community skills** come from the project's `MEMORY.md`, never a hardcoded name table (names and stacks change). Project wide skills/conventions live in root `MEMORY.md`, area specific ones in the nested `<area>/MEMORY.md` (maintained by `/audit` and `/sync`):
 
-1. Read root `AGENTS.md` and the nested `AGENTS.md` for this feature's area; their `## Agent skills` section lists each installed skill as a bullet with its location and a one line note on what it governs, so you can pick out the relevant ones and their paths directly.
+1. Read root `MEMORY.md` and the nested `MEMORY.md` for this feature's area; their `## Agent skills` section lists each installed skill as a bullet with its location and a one line note on what it governs, so you can pick out the relevant ones and their paths directly.
 2. Identify only the skills relevant to *this* feature. Take each relevant skill's path and note from that `## Agent skills` bullet, and open it on demand while writing, only if it materially shapes the decision (see *Write the spec*, item 12). Skip skills the feature doesn't touch.
-3. Available ≠ relevant. You may list the installed skills dirs to see what exists, but relevance comes from the feature plus `AGENTS.md`. If a clearly relevant skill is installed but not yet referenced in `AGENTS.md`, use it anyway and flag (spec Follow-up) that it belongs in the right context file: root if project wide, nested `<area>/AGENTS.md` if area specific.
+3. Available ≠ relevant. You may list the installed skills dirs to see what exists, but relevance comes from the feature plus `MEMORY.md`. If a clearly relevant skill is installed but not yet referenced in `MEMORY.md`, use it anyway and flag (spec Follow-up) that it belongs in the right context file: root if project wide, nested `<area>/MEMORY.md` if area specific.
 4. Whatever the context files show the project already uses (a BaaS, an ORM, a payment provider, an auth library) is what your library/provider recommendation must build on or prefer, not an unrelated external tool. If a genuinely better option isn't installed, note it as a spec Follow-up rather than silently assuming it.
 
 **Workflow skills** (never treat as community skills): `audit`, `architect`, `scope`, `develop`, `check`, `test`, `document`, `debug`, `sync`, plus new workflow skills as they're created.
@@ -155,12 +155,12 @@ The inferred MODE (from Framing) is already one of `FEATURE` / `ARCHITECTURE` / 
 
 The inputs to apply (you already have them from the design conversation and pre-flight):
 1. Design topic (from the user's original message)
-2. The inferred framing: MODE, platform (web/mobile/API), stack & conventions (from `AGENTS.md`), and any constraints/compliance inferred or confirmed
-2a. The feature's build approach (pre-flight precedence: scope row `Approach` override, else the project default from `AGENTS.md`/scope header, else the noted default) → `BUILD_APPROACH`; order and slice `## Build plan` by what the approach implies for this feature
+2. The inferred framing: MODE, platform (web/mobile/API), stack & conventions (from `MEMORY.md`), and any constraints/compliance inferred or confirmed
+2a. The feature's build approach (pre-flight precedence: scope row `Approach` override, else the project default from `MEMORY.md`/scope header, else the noted default) → `BUILD_APPROACH`; order and slice `## Build plan` by what the approach implies for this feature
 3. All staged conversation answers, stage by stage: the confirmed acceptance criteria (already IDed AC-1…, to seed `## Requirements`), the confirmed data model (entities/fields/relationships, to seed `## Build plan` task 1), the confirmed stack/tool picks, API surface, authz model, and edge cases. On the documentation path (staged conversation skipped) treat it as `"Staged design skipped, documenting an already-made decision"`, not an error
 3a. The RECOMMEND items → `RECOMMEND_ITEMS_OR_NONE`: the specific decisions you must make and justify (tool/provider aligned to the stack, session model, etc.); make each call, don't echo it back as an open question. If none, treat as `"none"`
 3b. The References level → `REFERENCES_LEVEL` (`none` | `sources` | `sources+links`, per the rule above). If Stage (c) never ran and you have not asked, default to `none`
-4. Context file contents: `AGENTS.md` (root + the feature area's nested), or `CLAUDE.md` as fallback, or "MISSING"
+4. Context file contents: `MEMORY.md` (root + the feature area's nested), or `MEMORY.md` as fallback, or "MISSING"
 5. Existing spec list (filenames + first line of each)
 6. Related spec paths (flagged in pre-flight)
 7. The resolved spec location (`$SPEC_DIR`), next number, and shape: a single file `$SPEC_DIR/NNNN-title.md`, or a directory `$SPEC_DIR/NNNN-title/` (`index.md` + `rationale.md`, plus child specs for an umbrella). Umbrella: write the named child decisions; any inventory/audit goes in `rationale.md`, never in `docs/scope/`, never loose in the code tree. Only the `index.md` carries a `**Status**:` line (it mirrors the feature); child specs omit the lifecycle Status (spec content governed by the umbrella)
@@ -168,7 +168,7 @@ The inputs to apply (you already have them from the design conversation and pre-
 9. Operation: `create` | `update` | `supersede`
 10. Today's date (from pre-flight)
 11. Documentation context (if the "already built" path ran: the engineer's free text answers about why this was chosen, alternatives, and tradeoffs)
-12. Community skills relevant to this feature (identified from `AGENTS.md`, per pre-flight): open a skill file on demand, only if it materially shapes this decision; its conventions are authoritative when consulted. Name each in the `## Decision` **Implementation skills** field.
+12. Community skills relevant to this feature (identified from `MEMORY.md`, per pre-flight): open a skill file on demand, only if it materially shapes this decision; its conventions are authoritative when consulted. Name each in the `## Decision` **Implementation skills** field.
 
 ---
 

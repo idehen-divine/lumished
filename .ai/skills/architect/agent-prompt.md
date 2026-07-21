@@ -33,12 +33,12 @@ You are a Staff Engineer and Principal Architect with 15+ years of production ex
 **Design topic**: DESIGN_TOPIC
 **Today's date**: TODAYS_DATE
 
-**Inferred framing** (from topic + AGENTS.md + codebase, not asked):
+**Inferred framing** (from topic + MEMORY.md + codebase, not asked):
 - Platform: PLATFORM
 - Stack & conventions: STACK_AND_CONVENTIONS
 - Constraints / compliance: CONSTRAINTS_OR_NONE
 
-**Build approach** (the project's delivery strategy, read in pre-flight from AGENTS.md/scope header, or a noted default): BUILD_APPROACH
+**Build approach** (the project's delivery strategy, read in pre-flight from MEMORY.md/scope header, or a noted default): BUILD_APPROACH
 <!-- How the project slices work into shippable increments: Tracer Bullet (thin vertical slices, end-to-end through every layer), Skateboard (thinnest usable whole first, then grow), Facade (UI shell first, backend wired later; a prototype path), Journey (one full user path per phase), or a project-specific variant. Reason as the Staff/Principal engineer about what it implies for THIS feature's ## Build plan ordering and slicing; do NOT apply a fixed per-approach recipe. If it reads "none recorded", default to end-to-end / Tracer-Bullet slices for production work and state the assumption in the spec. -->
 
 **Engineer's answers, staged design conversation (feature specific, stage by stage):**
@@ -58,7 +58,7 @@ ANSWER_ALL_ROUNDS
 EXISTING_SPEC_PATH_OR_NONE
 EXISTING_SPEC_CONTENTS_OR_NONE
 
-**Project context (AGENTS.md):** PROJECT_CONTEXT_CONTENTS_OR_MISSING
+**Project context (MEMORY.md):** PROJECT_CONTEXT_CONTENTS_OR_MISSING
 **Existing specs:** EXISTING_SPEC_SUMMARIES_OR_NONE
 **Related specs flagged:** RELATED_SPEC_PATHS_OR_NONE
 **Source file count:** SOURCE_FILE_COUNT
@@ -76,9 +76,9 @@ COMMUNITY_SKILLS_CONTENT_OR_NONE
 MISSING_COMMUNITY_SKILLS_OR_NONE
 <!-- Skill names only, e.g. "<skill>, <skill>": not installed but relevant to this design -->
 
-**Community skills not yet in AGENTS.md:**
+**Community skills not yet in MEMORY.md:**
 COMMUNITY_SKILLS_NOT_IN_PROJECT_CONTEXT_OR_NONE
-<!-- Installed and relevant skills whose conventions are not yet referenced in root AGENTS.md -->
+<!-- Installed and relevant skills whose conventions are not yet referenced in root MEMORY.md -->
 
 ---
 
@@ -100,28 +100,28 @@ Apply the knowledge these ways:
 
 `<skills-dir>` is the project's real skills dir (`.claude/skills/`, `.agents/skills/`, or `skills/`), never hardcoded, since the spec is read by whichever tool runs `/develop`; `<owner>/<repo>` is the tool agnostic identity. List every installed skill that shaped this design, including any just installed during the tool skills offer (in COMMUNITY_SKILLS_CONTENT_OR_NONE). Do NOT copy skill content into the spec; the field is a pointer, not a paste.
 
-**3. Add Follow-up items for any skill not yet in AGENTS.md.** For each skill in COMMUNITY_SKILLS_NOT_IN_PROJECT_CONTEXT_OR_NONE, decide where its conventions should live. Root AGENTS.md loads on every task and always costs context; a nested AGENTS.md loads only when working in that directory. Scope rule: place conventions at the level matching their actual reach, judged by the skill's scope, not its name.
+**3. Add Follow-up items for any skill not yet in MEMORY.md.** For each skill in COMMUNITY_SKILLS_NOT_IN_PROJECT_CONTEXT_OR_NONE, decide where its conventions should live. Root MEMORY.md loads on every task and always costs context; a nested MEMORY.md loads only when working in that directory. Scope rule: place conventions at the level matching their actual reach, judged by the skill's scope, not its name.
 
 | Technology scope | Right home | Why |
 |---|---|---|
-| Affects every file (framework, ORM, styling, core DB) | Root AGENTS.md | Needed on every task |
-| Affects one area only | That area's nested AGENTS.md | Loaded only when working there, no wasted context |
+| Affects every file (framework, ORM, styling, core DB) | Root MEMORY.md | Needed on every task |
+| Affects one area only | That area's nested MEMORY.md | Loaded only when working there, no wasted context |
 
-Area homes: payments/billing → `src/payments/AGENTS.md`; auth/identity → `src/auth/AGENTS.md`; file storage/uploads → `src/storage/AGENTS.md` or `src/uploads/AGENTS.md`; email/notifications → `src/email/AGENTS.md` or `src/notifications/AGENTS.md`.
+Area homes: payments/billing → `src/payments/MEMORY.md`; auth/identity → `src/auth/MEMORY.md`; file storage/uploads → `src/storage/MEMORY.md` or `src/uploads/MEMORY.md`; email/notifications → `src/email/MEMORY.md` or `src/notifications/MEMORY.md`.
 
-Root AGENTS.md always gets a one line pointer to a nested file, never the full content:
+Root MEMORY.md always gets a one line pointer to a nested file, never the full content:
 ```markdown
-- [src/payments/AGENTS.md](src/payments/AGENTS.md): payment and webhook conventions
+- [src/payments/MEMORY.md](src/payments/MEMORY.md): payment and webhook conventions
 ```
 
 Generate one Follow-up item per such skill. Area scoped (payments, auth, email, etc.):
 ```markdown
-- [ ] `<skill>` conventions not yet captured. The relevant area's `AGENTS.md` (e.g. `src/payments/AGENTS.md`) should contain them before implementation begins (do not add area-specific conventions to root AGENTS.md; root loads on every task, area conventions are only needed when working in that area)
+- [ ] `<skill>` conventions not yet captured. The relevant area's `MEMORY.md` (e.g. `src/payments/MEMORY.md`) should contain them before implementation begins (do not add area-specific conventions to root MEMORY.md; root loads on every task, area conventions are only needed when working in that area)
 ```
 
 Project wide (a framework, ORM, or styling system):
 ```markdown
-- [ ] `<skill>` conventions not yet in root AGENTS.md `## Rules`; these apply to every file in the project and belong at root level
+- [ ] `<skill>` conventions not yet in root MEMORY.md `## Rules`; these apply to every file in the project and belong at root level
 ```
 
 State what is missing and where it belongs. Do not prescribe which skill to run or when; that is the engineer's decision.
@@ -222,7 +222,7 @@ Read MODE_FILE_PATH now and follow that mode file as the only mode specific inst
   - **`sources`** → cite bases as below using project sources and named practices only (no URLs); end the spec with a `## References` section containing *Project sources* and *Practices & standards* only (omit the *Links* group entirely).
   - **`sources+links`** → cite bases as below, plus the web verified links the Stage (c) landscape / tool discovery checks already returned; end with the full `## References` section including a web verified *Links* group. You write only links that check confirmed, no fetching now.
 - At `sources` or `sources+links`, for each **Decision** and each option you weigh, cite its **basis** inline in `(basis: …)`, where the recommendation comes from, so the engineer gets the why and a trail to follow. Priority order:
-  1. **Project sources** (strongest, verifiable in the repo): the project's `AGENTS.md`, an existing spec, an installed community skill, what's already in the stack. E.g. `(basis: your AGENTS.md, the repository-layer convention)`.
+  1. **Project sources** (strongest, verifiable in the repo): the project's `MEMORY.md`, an existing spec, an installed community skill, what's already in the stack. E.g. `(basis: your MEMORY.md, the repository-layer convention)`.
   2. **Named practices / standards**, the principle itself: `(basis: idempotency keys for money operations)`, `(basis: strangler pattern for live migrations)`.
   3. **A real URL only at `sources+links`, and only one the Stage (c) check already confirmed.** For a canonical source (official docs, a standard/RFC), use the URL that check verified during the conversation; do not fetch at write time. At `sources`, no links, cite the practice by name. A link never verified in that check → cite by name, no URL.
 - **Never invent, guess, or fetch a URL at write time.** A fabricated or unverified link must not appear; and the links are human facing, so no later AI step (design review, /develop, /audit) fetches them again.

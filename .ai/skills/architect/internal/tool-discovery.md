@@ -1,6 +1,6 @@
 # Architect: Agent Skill and MCP discovery, asked for before it runs
 
-Read this only when the stack walk (Stage c) settles one or more **new** tools (a framework, database, auth library, provider, and so on) that are not already installed or recorded as declined in `AGENTS.md`. Skip it entirely when no new tool is chosen (e.g. an ENHANCEMENT reusing the existing stack).
+Read this only when the stack walk (Stage c) settles one or more **new** tools (a framework, database, auth library, provider, and so on) that are not already installed or recorded as declined in `MEMORY.md`. Skip it entirely when no new tool is chosen (e.g. an ENHANCEMENT reusing the existing stack).
 
 ## Step 1: Ask first (the consent gate)
 
@@ -36,7 +36,7 @@ Only `Yes, find them for me` may run a search. Until that option is picked, do n
 - **Inventory first, discover in batch.** Build `TOOL_DISCOVERY_SET` from every chosen tool this feature touches: runtime, framework, router, styling or UI kit, database, ORM or query layer, auth and session, payments, email, storage, search, queue, AI or vector DB, browser testing, observability, hosting. Include package names and aliases. Do not stop after the first technology.
 - **Run it in the background, keep interviewing.** Consent is given, so hand the whole `TOOL_DISCOVERY_SET` to a read only discovery subagent and do NOT wait on it: spawn it in the background (it blocks nothing) if your agent supports that, set its model explicitly to a fast, low cost tier (do not inherit the session model; on Claude Code spawn it as the `researcher` subagent type, which pins the model and gives it the registry CLI plus web tools), and have it run the detect and filter work below and return ONLY the compact candidate list (skills and MCP servers grouped by technology, already minus installed and declined). While it runs, continue the design conversation (stages d, e, f); collect its result just before the offer panel. This keeps the searches and fetched pages out of the main context and overlaps them with the interview. Fallback chain: no background support → run the same subagent blocking (it still isolates the search noise); no subagent at all → do the searches inline on the main thread. The offer panel always stays on the main thread (a subagent cannot prompt the engineer).
 - **Detect fresh, never hardcode (the discovery subagent's job, or inline in the fallback).** For EACH item, run `npx skills find <tool-or-package>`; if weak, retry aliases from package or org names. Collect every credible Agent Skill; one hit must not suppress another tool's search. Confirm with `npx skills add <owner>/<repo> --list` when practical. If the CLI is interactive or unavailable, search `"<tool>" "agent skill"` and confirm before offering. MCP: connector list first, else `"<tool>" "MCP server"` per item. Never hardcode which tools have skills or servers.
-- **Skip the known.** Do not offer what `npx skills list` or `AGENTS.md` shows already installed, or what `AGENTS.md` records as declined (the no nag rule). MCP (Model Context Protocol) is a cross tool standard: if a relevant server is already connected its tools simply appear available, so use them and do not offer them again.
+- **Skip the known.** Do not offer what `npx skills list` or `MEMORY.md` shows already installed, or what `MEMORY.md` records as declined (the no nag rule). MCP (Model Context Protocol) is a cross tool standard: if a relevant server is already connected its tools simply appear available, so use them and do not offer them again.
 - **Cache discovery.** Use `docs/.agent-cache/tool-discovery/<slug>.md` when available: date, tool, skill and MCP candidates, installed and declined. Reuse it when under 30 days old, then subtract installed and declined before offering.
 
 ## Step 3: Offer what you found, the engineer chooses
@@ -51,7 +51,7 @@ Skill: `npx skills add <owner>/<repo> -y` (into the project's agent). MCP: conne
 
 ## Step 5: Record
 
-Skills installed → carry into the spec's `## Decision` **Implementation skills** field when you write it, and flag for the `## Agent skills` section of `AGENTS.md` (one bullet per skill, with its location, so only the needed skills load). Servers connected → flag for that section's compact `MCP servers:` line. Anything declined or skipped → flag for its compact `Declined:` line so a later stage does not offer it again (root for project wide tech, the nested area doc for area specific tech). `/audit` and `/sync` own writing `AGENTS.md`.
+Skills installed → carry into the spec's `## Decision` **Implementation skills** field when you write it, and flag for the `## Agent skills` section of `MEMORY.md` (one bullet per skill, with its location, so only the needed skills load). Servers connected → flag for that section's compact `MCP servers:` line. Anything declined or skipped → flag for its compact `Declined:` line so a later stage does not offer it again (root for project wide tech, the nested area doc for area specific tech). `/audit` and `/sync` own writing `MEMORY.md`.
 
 ## Step 6: When nothing can be searched, installed, or connected
 

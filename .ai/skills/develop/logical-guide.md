@@ -2,14 +2,14 @@
 
 The backend/logic build track for `/develop`. The main agent reads this after the spec gate (Step 0 in `SKILL.md`) classifies a task as logical: APIs, services, data layers, business logic, integrations, background jobs, anything that is not rendered UI.
 
-You are a **senior backend engineer** on this project. You implement the decision that `/architect` already made; you do not litigate it again. The spec is your spec, the `AGENTS.md` beside the source is your conventions, and the existing code is your style guide.
+You are a **senior backend engineer** on this project. You implement the decision that `/architect` already made; you do not litigate it again. The spec is your spec, the `MEMORY.md` beside the source is your conventions, and the existing code is your style guide.
 
 ## Ground rules
 
 - **Build to the spec.** Data model, API surface, key invariants, security model, and configuration come from the spec's `## Feature design` section. If the spec says `subscription: trialing → active → past_due`, you implement exactly that state machine, not your own.
-- **Match the codebase.** Read the nearest `AGENTS.md` and 2 to 3 neighbouring files before writing. Use the project's existing ORM, error handling pattern, validation library, and file layout. Never introduce a new pattern when one already exists, that is a decision, and decisions belong in a spec.
+- **Match the codebase.** Read the nearest `MEMORY.md` and 2 to 3 neighbouring files before writing. Use the project's existing ORM, error handling pattern, validation library, and file layout. Never introduce a new pattern when one already exists, that is a decision, and decisions belong in a spec.
 - **Infer / ask / recommend** (same discipline as `/architect`):
-  - **INFER** from the spec, `AGENTS.md`, and codebase: stack, conventions, the decided approach. Never ask again what's already recorded (that's the whole point of the spec → `AGENTS.md` chain).
+  - **INFER** from the spec, `MEMORY.md`, and codebase: stack, conventions, the decided approach. Never ask again what's already recorded (that's the whole point of the spec → `MEMORY.md` chain).
   - **ASK** only genuinely ambiguous business rules the spec left open ("should an expired invite be reusable or regenerated?"). Keep it to what blocks correct implementation.
   - **RECOMMEND** local implementation choices (a helper's shape, where a file lives), decide and proceed; don't pester.
 
@@ -18,7 +18,7 @@ You are a **senior backend engineer** on this project. You implement the decisio
 ### Phase 1: Ground in the decision
 
 - Read the governing spec in full, especially `## Feature design` (data model, API surface, invariants, security model, configuration) and `## Consequences`.
-- Ground in the **exploration map** from `SKILL.md` Step 2.5 (the files to touch, patterns to match, symbols to reuse) rather than reading the whole area again inline. Read the nearest `AGENTS.md`, and, only if no map was produced (a small, localized task), the few files the feature must integrate with (entry points, existing models, the router/service layer).
+- Ground in the **exploration map** from `SKILL.md` Step 2.5 (the files to touch, patterns to match, symbols to reuse) rather than reading the whole area again inline. Read the nearest `MEMORY.md`, and, only if no map was produced (a small, localized task), the few files the feature must integrate with (entry points, existing models, the router/service layer).
 - Ground in the spec's **`## Requirements`** too, the acceptance criteria `AC-1…` are the contract this build must satisfy end to end, and the `## Build plan` tasks each name the `AC-N` they serve. You'll derive the verify steps again from these criteria at the end of the run.
 - **Ground in the project's build approach** (`SKILL.md` Step 2), it sets how this logical slice fits the whole: built end to end alongside its UI in a tracer bullet slice, or wired behind a UI shell already standing in a Facade. It changes *when* the logic joins the slice, not *how* you build it correctly. If no approach is recorded, build it as part of the coherent end to end slice.
 - List the integration points and the order you'll build in, within this track, typically data → logic → interface → integration → cleanup. Surface any spec gap now, before writing code.

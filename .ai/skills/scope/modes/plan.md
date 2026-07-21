@@ -2,7 +2,7 @@
 
 ### Step 1: Locate the scope; greenfield / brownfield / monorepo
 
-Detect (skip `node_modules/` and `.git/`): source files (any `.ts`, `.tsx`, `.js`, `.py`, `.go`, `.rs`; presence ⇒ brownfield, none ⇒ greenfield); root `AGENTS.md`; existing scope under `docs/scope/` (`scope.md`, or `index.md` + epic files; monorepo: `docs/scope/<workspace>/`), noting the shape.
+Detect (skip `node_modules/` and `.git/`): source files (any `.ts`, `.tsx`, `.js`, `.py`, `.go`, `.rs`; presence ⇒ brownfield, none ⇒ greenfield); root `MEMORY.md`; existing scope under `docs/scope/` (`scope.md`, or `index.md` + epic files; monorepo: `docs/scope/<workspace>/`), noting the shape.
 
 Read exactly one route file before continuing to Step 2:
 
@@ -14,7 +14,7 @@ Do not read the other plan route files unless the classification changes. After 
 
 ### Step 2: Ask (generated question walk, as decision panels)
 
-Do not follow a fixed script or a set number of rounds. Enumerate the planning dimensions THIS product needs (generate them from the idea and `AGENTS.md`), then ask them one after another as batched decision panels (up to 4 per panel), as many panels as it takes. Infer and skip anything already stated; ask everything else. The more thoroughly you ask, the better the scope: never cap the questions to save time, and never end while a load bearing dimension is unasked.
+Do not follow a fixed script or a set number of rounds. Enumerate the planning dimensions THIS product needs (generate them from the idea and `MEMORY.md`), then ask them one after another as batched decision panels (up to 4 per panel), as many panels as it takes. Infer and skip anything already stated; ask everything else. The more thoroughly you ask, the better the scope: never cap the questions to save time, and never end while a load bearing dimension is unasked.
 
 Cover at least these dimension groups (a checklist of what to reach, not an order to recite; add product specific dimensions freely):
 
@@ -37,7 +37,7 @@ Reason out the pick, never hardcode it or its mechanics: default for a proper pr
 
 **Once the approach is chosen, read its persona file and adopt that engineer's role for decomposition** (`approaches/tracer-bullet.md`, `approaches/skateboard.md`, `approaches/facade.md`, or `approaches/journey.md`). Read only the chosen one. Each persona defines how that engineer slices, what the first slice or deliverable is, what is real vs deferred, and the sequencing, with a worked example. All slicing and sequencing in Step 4 and Step 5 follows that persona, so the four approaches produce genuinely different scopes for the same product, not the same list relabeled. A per feature override (Step 5) reads that feature's chosen persona and applies it to that feature only.
 
-Record it (the propagation source) in the scope header: `Build approach: <name> (<one-line principle>)`. A project wide convention: `/audit` and `/sync` persist it into root `AGENTS.md`; `/architect`, `/develop`, `/check verify` read and honor it. It also sets each feature's Phase (its slice / journey), shown in the At a glance table and as section grouping.
+Record it (the propagation source) in the scope header: `Build approach: <name> (<one-line principle>)`. A project wide convention: `/audit` and `/sync` persist it into root `MEMORY.md`; `/architect`, `/develop`, `/check verify` read and honor it. It also sets each feature's Phase (its slice / journey), shown in the At a glance table and as section grouping.
 
 Header value = project default; a single feature may override via the optional per feature Approach (Step 5), a tag beside its heading (e.g. `· Facade`). Precedence: own tag if set, else project default; tag only when it differs (no tag = inherit).
 
@@ -106,7 +106,7 @@ Ask ONE consent question governing both the `(basis: …)` citations and any ref
 
 No references (or no answer): no `## References` section, no `(basis: …)` citations anywhere; the scope keeps its intent and reasoning and reads clean. Done.
 
-Sources only (or the agent has no web tools): wherever the scope recommends something the engineer didn't dictate (phasing choice, order rationale, a suggested capability, a `Needs spec` flag, a tier call), append a short `(basis: …)`: a project source (`your AGENTS.md`, a spec, the existing stack) or a named practice (`vertical slices ship real value early`, `foundations before features`, `data model is the costliest thing to redo`); inline you have no web tools, so name the source or practice, never a URL. Add a `## References` section naming *Project sources* (verifiable) and *Practices & standards* (named); no Links group, no subagent. Done.
+Sources only (or the agent has no web tools): wherever the scope recommends something the engineer didn't dictate (phasing choice, order rationale, a suggested capability, a `Needs spec` flag, a tier call), append a short `(basis: …)`: a project source (`your MEMORY.md`, a spec, the existing stack) or a named practice (`vertical slices ship real value early`, `foundations before features`, `data model is the costliest thing to redo`); inline you have no web tools, so name the source or practice, never a URL. Add a `## References` section naming *Project sources* (verifiable) and *Practices & standards* (named); no Links group, no subagent. Done.
 
 Sources plus web verified links: as Sources only, then verify the links with a read only web subagent (it only fetches; you do the writing), so links are confirmed, never fabricated:
 - Spawn a read only `researcher` subagent (capability first). `model`: the cheapest tier; do not inherit the session model (Claude Code: the `researcher` type pins `haiku` and carries the web tools; a light model elsewhere) · `description: "Scope: verify reference links"`
