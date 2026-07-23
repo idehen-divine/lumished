@@ -4,6 +4,7 @@ namespace App\Services\OTP;
 
 use App\Enums\OTPTypeEnum;
 use App\Mail\ResetPasswordOtpMail;
+use App\Mail\TwoFactorOtpMail;
 use App\Mail\VerifyEmailOtpMail;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
@@ -27,15 +28,17 @@ class OTPServiceImplement implements OTPService
     }
 
     /** {@inheritDoc} */
-    public function createAndSendOTP(string $type, string $email): void
+    public function createAndSendOTP(string $type, string $email, ?string $userName = null): void
     {
+        $name = $userName ?? $email;
         $otp = $this->generateOtp();
 
         Cache::put("{$type}_{$email}", $otp, now()->addMinutes(5));
 
         $mailable = match ($type) {
-            OTPTypeEnum::VERIFY_EMAIL_OTP->name => new VerifyEmailOtpMail($email, $otp),
-            OTPTypeEnum::RESET_PASSWORD_OTP->name => new ResetPasswordOtpMail($email, $otp),
+            OTPTypeEnum::VERIFY_EMAIL_OTP->name => new VerifyEmailOtpMail($name, $otp),
+            OTPTypeEnum::RESET_PASSWORD_OTP->name => new ResetPasswordOtpMail($name, $otp),
+            OTPTypeEnum::TWO_FACTOR_OTP->name => new TwoFactorOtpMail($name, $otp),
             default => null,
         };
 

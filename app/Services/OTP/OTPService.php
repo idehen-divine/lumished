@@ -13,8 +13,9 @@ interface OTPService
      *
      * @param  string  $type  The OTP type (VERIFY_EMAIL_OTP, RESET_PASSWORD_OTP, etc.)
      * @param  string  $email  The recipient email address
+     * @param  string|null  $userName  The recipient's first name (for email greeting)
      */
-    public function createAndSendOTP(string $type, string $email): void;
+    public function createAndSendOTP(string $type, string $email, ?string $userName = null): void;
 
     /**
      * Verify an OTP code for the given type and email.

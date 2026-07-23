@@ -33,7 +33,7 @@ class AuthServiceImplement extends ServiceApi implements AuthService
         try {
             $user = $this->userRepository->createCustomer($data);
 
-            $this->otpService->createAndSendOTP(OTPTypeEnum::VERIFY_EMAIL_OTP->name, $user->email);
+            $this->otpService->createAndSendOTP(OTPTypeEnum::VERIFY_EMAIL_OTP->name, $user->email, $user->first_name);
             Mail::to($user->email)->queue(new WelcomeCustomerMail($user->first_name));
 
             $token = $user->createToken('auth')->plainTextToken;
@@ -133,7 +133,7 @@ class AuthServiceImplement extends ServiceApi implements AuthService
             $pendingToken = Str::random(64);
 
             if ($user) {
-                $this->otpService->createAndSendOTP(OTPTypeEnum::RESET_PASSWORD_OTP->name, $user->email);
+                $this->otpService->createAndSendOTP(OTPTypeEnum::RESET_PASSWORD_OTP->name, $user->email, $user->first_name);
                 Cache::put('password_reset_pending:'.hash('sha256', $pendingToken), $user->id, now()->addMinutes(5));
             }
 
@@ -255,7 +255,7 @@ class AuthServiceImplement extends ServiceApi implements AuthService
                     ->setData(['user' => new UserResource($user)]);
             }
 
-            $this->otpService->createAndSendOTP(OTPTypeEnum::VERIFY_EMAIL_OTP->name, $user->email);
+            $this->otpService->createAndSendOTP(OTPTypeEnum::VERIFY_EMAIL_OTP->name, $user->email, $user->first_name);
 
             return $this->setCode(ResponseCode::SUCCESS->value)
                 ->setMessage('Verification code resent. Please check your email.');
@@ -277,7 +277,7 @@ class AuthServiceImplement extends ServiceApi implements AuthService
 
             DB::commit();
 
-            $this->otpService->createAndSendOTP(OTPTypeEnum::VERIFY_EMAIL_OTP->name, $data['email']);
+            $this->otpService->createAndSendOTP(OTPTypeEnum::VERIFY_EMAIL_OTP->name, $data['email'], $user->first_name);
 
             return $this->setCode(ResponseCode::SUCCESS->value)
                 ->setMessage('Verification OTP sent. Please check your inbox.');
@@ -300,7 +300,7 @@ class AuthServiceImplement extends ServiceApi implements AuthService
             }
 
             $pendingToken = Str::random(64);
-            $this->otpService->createAndSendOTP(OTPTypeEnum::RESET_PASSWORD_OTP->name, $user->email);
+            $this->otpService->createAndSendOTP(OTPTypeEnum::RESET_PASSWORD_OTP->name, $user->email, $user->first_name);
             Cache::put('password_update_pending:'.hash('sha256', $pendingToken), $user->id, now()->addMinutes(5));
 
             return $this->setCode(ResponseCode::SUCCESS->value)
@@ -527,7 +527,7 @@ class AuthServiceImplement extends ServiceApi implements AuthService
                     ->setMessage('User not found.');
             }
 
-            $otp = $this->otpService->createAndSendOTP(OTPTypeEnum::TWO_FACTOR_OTP->name, $user->email);
+            $this->otpService->createAndSendOTP(OTPTypeEnum::TWO_FACTOR_OTP->name, $user->email, $user->first_name);
 
             return $this->setCode(ResponseCode::SUCCESS->value)
                 ->setMessage('A verification code has been sent to your email.');
