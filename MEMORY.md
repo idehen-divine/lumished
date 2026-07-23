@@ -42,6 +42,12 @@ Stored in `docs/specs/`. Format: `docs/specs/NNNN-title.md`.
 - `$request->validated()` only — never `$request->all()`
 - Run `vendor/bin/pint --dirty --format agent` after every PHP change
 - Write or update tests before finalizing
+- Routes: prefix `api/admin/v1/` for admin, `api/customer/v1/` for customer, `api/v1/` for public
+- Controllers: inject service interface, return `$service->method()->toJson()`
+- Services: extend `ServiceApi`, use `LogAndRespond` trait, wrap in try-catch, use `DB::beginTransaction`/`rollBack`
+- Helpers: extend `L0n3ly\LaravelDynamicHelpers\Helper`, call via function (`imageHelper()->method()`)
+- Middleware aliases: `admin`, `customer`, `verified` (maps to `EnsureEmailIsVerified`)
+- Rate limiters: `auth` (5/min), `api` (60/min), `admin:api` (30/min)
 
 ## Agent skills
 
@@ -66,4 +72,4 @@ Installed in `.agents/skills/`. Load only what a task needs.
 
 ## Context files
 
-<!-- Nested MEMORY.md files are listed here as they are created -->
+- [tests/MEMORY.md](tests/MEMORY.md): test conventions and setup patterns
