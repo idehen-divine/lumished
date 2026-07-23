@@ -8,12 +8,14 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libzip-dev \
     libicu-dev \
+    libwebp-dev \
     zip \
     unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install \
+RUN docker-php-ext-configure gd --with-webp \
+    && docker-php-ext-install \
     pdo_mysql \
     mbstring \
     exif \
