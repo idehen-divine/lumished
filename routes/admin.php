@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AdminAuthController;
+use App\Http\Controllers\Api\AdminStoreController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -18,6 +19,17 @@ Route::prefix('v1')->group(function () {
 
     /**********************    Protected Routes    ***********************/
     Route::middleware(['auth:sanctum', 'admin', 'verified'])->group(function () {
+
+        /**********************    Admin Store Routes    ***********************/
+        Route::prefix('stores')->name('stores.')->controller(AdminStoreController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/{id}', 'show')->name('show');
+            Route::put('/{id}/status', 'updateStatus')->name('status.update');
+        });
+
+        Route::prefix('store/{storeSlug}')->name('stores.')->controller(AdminStoreController::class)->group(function () {
+            Route::get('/products', 'products')->name('products');
+        });
 
         /**********************    Account Routes    ***********************/
         Route::prefix('account')->name('account.')->group(function () {
