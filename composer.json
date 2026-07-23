@@ -19,6 +19,7 @@
         "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "^3.35",
         "pragmarx/google2fa-laravel": "^3.0",
+        "spatie/image": "^3.9",
         "spatie/laravel-permission": "^8.3",
         "yabacon/paystack-php": "^2.2"
     },
