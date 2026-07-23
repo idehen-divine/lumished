@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('auth', function (Request $request) {
             $limit = (int) env('AUTH_THROTTLE_LIMIT', 5);
+
             return Limit::perMinute($limit)->by($request->input('email') ?: $request->ip());
         });
 

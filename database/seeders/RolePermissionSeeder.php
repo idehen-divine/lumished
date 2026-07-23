@@ -38,11 +38,16 @@ class RolePermissionSeeder extends Seeder
             PermissionEnum::VIEW_ORDERS->name,
             PermissionEnum::MANAGE_ORDERS->name,
             PermissionEnum::VIEW_LOGS->name,
+            PermissionEnum::VIEW_STORES->name,
+            PermissionEnum::MANAGE_STORES->name,
         ]);
         $customerRole->givePermissionTo([
             PermissionEnum::ACCESS_CUSTOMER_PANEL->name,
             PermissionEnum::VIEW_PRODUCTS->name,
             PermissionEnum::VIEW_ORDERS->name,
+            PermissionEnum::MANAGE_OWN_STORES->name,
+            PermissionEnum::MANAGE_OWN_PRODUCTS->name,
+            PermissionEnum::MANAGE_OWN_CATEGORIES->name,
         ]);
     }
 }

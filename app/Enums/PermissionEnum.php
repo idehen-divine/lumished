@@ -36,4 +36,11 @@ enum PermissionEnum
 
     case MANAGE_ORDERS;
     case VIEW_ORDERS;
+
+    case MANAGE_OWN_STORES;
+    case MANAGE_OWN_PRODUCTS;
+    case MANAGE_OWN_CATEGORIES;
+
+    case VIEW_STORES;
+    case MANAGE_STORES;
 }
