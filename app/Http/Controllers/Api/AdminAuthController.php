@@ -17,14 +17,6 @@ use App\Services\Auth\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * @group Authentication
- *
- * Admin authentication endpoints for login, password management,
- * email verification, two-factor authentication, and account management.
- *
- * @subgroup Admin
- */
 class AdminAuthController extends Controller
 {
     public function __construct(protected AuthService $authService) {}
@@ -82,6 +74,10 @@ class AdminAuthController extends Controller
      *     "message": "Account is locked due to too many failed attempts. Try again in 1 hour."
      * }
      *
+     * @group Admin Management
+     *
+     * @subgroup Authentication
+     *
      * @unauthenticated
      */
     public function login(LoginRequest $request): JsonResponse
@@ -98,6 +94,10 @@ class AdminAuthController extends Controller
      *     "code": 200,
      *     "message": "Logged out successfully"
      * }
+     *
+     * @group Admin Management
+     *
+     * @subgroup Authentication
      *
      * @authenticated
      */
@@ -121,6 +121,10 @@ class AdminAuthController extends Controller
      *         "pending_token": "x8kL3mN9pQ2rV7wZ5tY1bC4dF6gH0jS"
      *     }
      * }
+     *
+     * @group Admin Management
+     *
+     * @subgroup Authentication
      *
      * @unauthenticated
      */
@@ -147,6 +151,10 @@ class AdminAuthController extends Controller
      *     "message": "Invalid or expired OTP code."
      * }
      *
+     * @group Admin Management
+     *
+     * @subgroup Authentication
+     *
      * @unauthenticated
      */
     public function verifyPasswordOtp(VerifyOtpRequest $request): JsonResponse
@@ -170,6 +178,10 @@ class AdminAuthController extends Controller
      *     "message": "Invalid or expired token."
      * }
      *
+     * @group Admin Management
+     *
+     * @subgroup Authentication
+     *
      * @unauthenticated
      */
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
@@ -179,6 +191,10 @@ class AdminAuthController extends Controller
 
     /**
      * Verify the authenticated admin's email.
+     *
+     * @group Admin Management
+     *
+     * @subgroup Account
      *
      * @bodyParam otp string required The 6-digit OTP sent to the email. Example: 111111
      *
@@ -208,7 +224,22 @@ class AdminAuthController extends Controller
      *     "code": 208,
      *     "message": "Email is already verified.",
      *     "data": {
-     *         "user": { ... }
+     *         "user": {
+     *             "id": "01953801-eeee-1234-5678-1234567890ef",
+     *             "first_name": "Admin",
+     *             "last_name": "User",
+     *             "other_name": null,
+     *             "email": "admin@example.com",
+     *             "phone_no": "+2348012345678",
+     *             "profile_image": null,
+     *             "gender": "MALE",
+     *             "status": "ACTIVE",
+     *             "full_name": "Admin User",
+     *             "role": ["ADMIN"],
+     *             "email_verified_at": "2026-07-21 10:00:00",
+     *             "two_factor_confirmed_at": null,
+     *             "created_at": "2026-07-20 09:00:00"
+     *         }
      *     }
      * }
      * @response 400 scenario="Invalid OTP" {
@@ -226,6 +257,10 @@ class AdminAuthController extends Controller
     /**
      * Resend the email verification OTP.
      *
+     * @group Admin Management
+     *
+     * @subgroup Account
+     *
      * @response 200 {
      *     "code": 200,
      *     "message": "Verification code resent. Please check your email."
@@ -234,7 +269,22 @@ class AdminAuthController extends Controller
      *     "code": 208,
      *     "message": "Email is already verified.",
      *     "data": {
-     *         "user": { ... }
+     *         "user": {
+     *             "id": "01953801-eeee-1234-5678-1234567890ef",
+     *             "first_name": "Admin",
+     *             "last_name": "User",
+     *             "other_name": null,
+     *             "email": "admin@example.com",
+     *             "phone_no": "+2348012345678",
+     *             "profile_image": null,
+     *             "gender": "MALE",
+     *             "status": "ACTIVE",
+     *             "full_name": "Admin User",
+     *             "role": ["ADMIN"],
+     *             "email_verified_at": "2026-07-21 10:00:00",
+     *             "two_factor_confirmed_at": null,
+     *             "created_at": "2026-07-20 09:00:00"
+     *         }
      *     }
      * }
      *
@@ -247,6 +297,10 @@ class AdminAuthController extends Controller
 
     /**
      * Update the authenticated admin's email.
+     *
+     * @group Admin Management
+     *
+     * @subgroup Account
      *
      * The new email is marked unverified. A verification OTP is sent to the new address.
      *
@@ -273,6 +327,10 @@ class AdminAuthController extends Controller
     /**
      * Initiate a password change for the authenticated admin.
      *
+     * @group Admin Management
+     *
+     * @subgroup Account
+     *
      * Sends a verification OTP to the admin's email.
      *
      * @response 200 {
@@ -292,6 +350,10 @@ class AdminAuthController extends Controller
 
     /**
      * Verify OTP for admin password change.
+     *
+     * @group Admin Management
+     *
+     * @subgroup Account
      *
      * @bodyParam pending_token string required The token from initiate password change. Example: x8kL3mN9pQ2rV7wZ5tY1bC4dF6gH0jS
      * @bodyParam otp string required The 6-digit OTP sent to the email. Example: 111111
@@ -318,6 +380,10 @@ class AdminAuthController extends Controller
     /**
      * Confirm the admin password update.
      *
+     * @group Admin Management
+     *
+     * @subgroup Account
+     *
      * Current session stays active (unlike password reset).
      *
      * @bodyParam reset_token string required The token from OTP verification. Example: aB3cD5eF7gH9iJ1kL2mN4oP6qR8sT0uV
@@ -338,6 +404,10 @@ class AdminAuthController extends Controller
 
     /**
      * Generate a new 2FA secret for the admin.
+     *
+     * @group Admin Management
+     *
+     * @subgroup Account
      *
      * Returns a TOTP secret and QR code URL for the authenticator app.
      *
@@ -360,6 +430,10 @@ class AdminAuthController extends Controller
     /**
      * Confirm and activate two-factor authentication for the admin.
      *
+     * @group Admin Management
+     *
+     * @subgroup Account
+     *
      * @bodyParam code string required The 6-digit TOTP code from the authenticator app. Example: 123456
      *
      * @response 200 scenario="Success" {
@@ -380,6 +454,10 @@ class AdminAuthController extends Controller
 
     /**
      * Disable two-factor authentication for the admin.
+     *
+     * @group Admin Management
+     *
+     * @subgroup Account
      *
      * @bodyParam code string required The 6-digit TOTP code from the authenticator app. Example: 123456
      *
@@ -440,6 +518,10 @@ class AdminAuthController extends Controller
      *     "message": "Invalid authentication code."
      * }
      *
+     * @group Admin Management
+     *
+     * @subgroup Authentication
+     *
      * @unauthenticated
      */
     public function verifyTwoFactor(VerifyTwoFactorRequest $request): JsonResponse
@@ -461,6 +543,10 @@ class AdminAuthController extends Controller
      *     "message": "Invalid or expired challenge token."
      * }
      *
+     * @group Admin Management
+     *
+     * @subgroup Authentication
+     *
      * @unauthenticated
      */
     public function resendTwoFactorEmail(Request $request): JsonResponse
@@ -472,6 +558,10 @@ class AdminAuthController extends Controller
 
     /**
      * Delete the authenticated admin's account.
+     *
+     * @group Admin Management
+     *
+     * @subgroup Account
      *
      * @bodyParam password string required The current password for confirmation. Example: Password1
      *
@@ -489,6 +579,10 @@ class AdminAuthController extends Controller
 
     /**
      * Export the authenticated admin's personal data.
+     *
+     * @group Admin Management
+     *
+     * @subgroup Account
      *
      * @response 200 {
      *     "code": 200,

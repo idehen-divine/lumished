@@ -18,14 +18,6 @@ use App\Services\Auth\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * @group Authentication
- *
- * Customer authentication endpoints for registration, login, password management,
- * email verification, two-factor authentication, and account management.
- *
- * @subgroup Customer
- */
 class CustomerAuthController extends Controller
 {
     public function __construct(protected AuthService $authService) {}
@@ -74,6 +66,10 @@ class CustomerAuthController extends Controller
      *         "email": ["The email has already been taken."]
      *     }
      * }
+     *
+     * @group Customer Management
+     *
+     * @subgroup Authentication
      *
      * @unauthenticated
      */
@@ -135,6 +131,10 @@ class CustomerAuthController extends Controller
      *     "message": "Account is locked due to too many failed attempts. Try again in 1 hour."
      * }
      *
+     * @group Customer Management
+     *
+     * @subgroup Authentication
+     *
      * @unauthenticated
      */
     public function login(LoginRequest $request): JsonResponse
@@ -151,6 +151,10 @@ class CustomerAuthController extends Controller
      *     "code": 200,
      *     "message": "Logged out successfully"
      * }
+     *
+     * @group Customer Management
+     *
+     * @subgroup Authentication
      *
      * @authenticated
      */
@@ -175,6 +179,10 @@ class CustomerAuthController extends Controller
      *         "pending_token": "x8kL3mN9pQ2rV7wZ5tY1bC4dF6gH0jS"
      *     }
      * }
+     *
+     * @group Customer Management
+     *
+     * @subgroup Authentication
      *
      * @unauthenticated
      */
@@ -204,6 +212,10 @@ class CustomerAuthController extends Controller
      *     "message": "Invalid or expired OTP code."
      * }
      *
+     * @group Customer Management
+     *
+     * @subgroup Authentication
+     *
      * @unauthenticated
      */
     public function verifyPasswordOtp(VerifyOtpRequest $request): JsonResponse
@@ -230,6 +242,10 @@ class CustomerAuthController extends Controller
      *     "message": "Invalid or expired token."
      * }
      *
+     * @group Customer Management
+     *
+     * @subgroup Authentication
+     *
      * @unauthenticated
      */
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
@@ -239,6 +255,10 @@ class CustomerAuthController extends Controller
 
     /**
      * Verify the authenticated user's email.
+     *
+     * @group Customer Management
+     *
+     * @subgroup Account
      *
      * @bodyParam otp string required The 6-digit OTP sent to the email. Example: 111111
      *
@@ -268,7 +288,22 @@ class CustomerAuthController extends Controller
      *     "code": 208,
      *     "message": "Email is already verified.",
      *     "data": {
-     *         "user": { ... }
+     *         "user": {
+     *             "id": "01953801-abcd-1234-5678-1234567890ab",
+     *             "first_name": "John",
+     *             "last_name": "Doe",
+     *             "other_name": null,
+     *             "email": "john@example.com",
+     *             "phone_no": null,
+     *             "profile_image": null,
+     *             "gender": null,
+     *             "status": "ACTIVE",
+     *             "full_name": "John Doe",
+     *             "role": ["CUSTOMER"],
+     *             "email_verified_at": "2026-07-21 14:00:00",
+     *             "two_factor_confirmed_at": null,
+     *             "created_at": "2026-07-21 12:00:00"
+     *         }
      *     }
      * }
      * @response 400 scenario="Invalid OTP" {
@@ -286,6 +321,10 @@ class CustomerAuthController extends Controller
     /**
      * Resend the email verification OTP.
      *
+     * @group Customer Management
+     *
+     * @subgroup Account
+     *
      * @response 200 {
      *     "code": 200,
      *     "message": "Verification code resent. Please check your email."
@@ -294,7 +333,22 @@ class CustomerAuthController extends Controller
      *     "code": 208,
      *     "message": "Email is already verified.",
      *     "data": {
-     *         "user": { ... }
+     *         "user": {
+     *             "id": "01953801-abcd-1234-5678-1234567890ab",
+     *             "first_name": "John",
+     *             "last_name": "Doe",
+     *             "other_name": null,
+     *             "email": "john@example.com",
+     *             "phone_no": null,
+     *             "profile_image": null,
+     *             "gender": null,
+     *             "status": "ACTIVE",
+     *             "full_name": "John Doe",
+     *             "role": ["CUSTOMER"],
+     *             "email_verified_at": "2026-07-21 14:00:00",
+     *             "two_factor_confirmed_at": null,
+     *             "created_at": "2026-07-21 12:00:00"
+     *         }
      *     }
      * }
      *
@@ -307,6 +361,10 @@ class CustomerAuthController extends Controller
 
     /**
      * Update the authenticated user's email.
+     *
+     * @group Customer Management
+     *
+     * @subgroup Account
      *
      * The new email is marked unverified. A verification OTP is sent to the new address.
      *
@@ -333,6 +391,10 @@ class CustomerAuthController extends Controller
     /**
      * Initiate a password change.
      *
+     * @group Customer Management
+     *
+     * @subgroup Account
+     *
      * Sends a verification OTP to the user's email.
      * The OTP must be verified before the password can be changed.
      *
@@ -353,6 +415,10 @@ class CustomerAuthController extends Controller
 
     /**
      * Verify OTP for password change.
+     *
+     * @group Customer Management
+     *
+     * @subgroup Account
      *
      * @bodyParam pending_token string required The token from initiate password change. Example: x8kL3mN9pQ2rV7wZ5tY1bC4dF6gH0jS
      * @bodyParam otp string required The 6-digit OTP sent to the email. Example: 111111
@@ -379,6 +445,10 @@ class CustomerAuthController extends Controller
     /**
      * Confirm the password update.
      *
+     * @group Customer Management
+     *
+     * @subgroup Account
+     *
      * Applies the new password after OTP verification.
      * Current session stays active (unlike password reset).
      *
@@ -400,6 +470,10 @@ class CustomerAuthController extends Controller
 
     /**
      * Generate a new 2FA secret.
+     *
+     * @group Customer Management
+     *
+     * @subgroup Account
      *
      * Returns a TOTP secret and QR code URL for the authenticator app.
      * The secret must be confirmed with a valid TOTP code before activation.
@@ -423,6 +497,10 @@ class CustomerAuthController extends Controller
     /**
      * Confirm and activate two-factor authentication.
      *
+     * @group Customer Management
+     *
+     * @subgroup Account
+     *
      * Validates the TOTP code from the authenticator app and activates 2FA.
      *
      * @bodyParam code string required The 6-digit TOTP code from the authenticator app. Example: 123456
@@ -445,6 +523,10 @@ class CustomerAuthController extends Controller
 
     /**
      * Disable two-factor authentication.
+     *
+     * @group Customer Management
+     *
+     * @subgroup Account
      *
      * Requires a valid TOTP code from the authenticator app to disable.
      *
@@ -510,6 +592,10 @@ class CustomerAuthController extends Controller
      *     "message": "Invalid authentication code."
      * }
      *
+     * @group Customer Management
+     *
+     * @subgroup Authentication
+     *
      * @unauthenticated
      */
     public function verifyTwoFactor(VerifyTwoFactorRequest $request): JsonResponse
@@ -534,6 +620,10 @@ class CustomerAuthController extends Controller
      *     "message": "Invalid or expired challenge token."
      * }
      *
+     * @group Customer Management
+     *
+     * @subgroup Authentication
+     *
      * @unauthenticated
      */
     public function resendTwoFactorEmail(Request $request): JsonResponse
@@ -545,6 +635,10 @@ class CustomerAuthController extends Controller
 
     /**
      * Delete the authenticated user's account.
+     *
+     * @group Customer Management
+     *
+     * @subgroup Account
      *
      * Requires the current password. All user data and tokens are deleted.
      *
@@ -564,6 +658,10 @@ class CustomerAuthController extends Controller
 
     /**
      * Export the authenticated user's personal data.
+     *
+     * @group Customer Management
+     *
+     * @subgroup Account
      *
      * Returns all user data as JSON for GDPR compliance.
      *
