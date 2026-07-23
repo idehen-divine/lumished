@@ -15,6 +15,7 @@ class EmailTest extends TestCase
     use RefreshDatabase, WithFaker;
 
     private User $user;
+
     private string $token;
 
     protected function setUp(): void
