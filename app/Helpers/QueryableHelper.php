@@ -7,10 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 use L0n3ly\LaravelDynamicHelpers\Helper;
 
 class QueryableHelper extends Helper
 {
+    /**
+     * Build a standardized pagination metadata array.
+     *
+     * @param  LengthAwarePaginator  $paginator  The paginator instance
+     * @return array The pagination metadata (from, to, total, per_page, etc.)
+     */
     public function getPagination(LengthAwarePaginator $paginator): array
     {
         return [
@@ -26,6 +33,20 @@ class QueryableHelper extends Helper
         ];
     }
 
+    /**
+     * Fetch paginated results with optional filtering, sorting, and search.
+     *
+     * Applies status filters, featured filters, exact column filters,
+     * fuzzy prefix search across searchable columns, custom query callbacks,
+     * and sorted pagination based on request input.
+     *
+     * @param  Model|EloquentBuilder|QueryBuilder  $model  The starting model or query builder instance
+     * @param  array  $options  Configuration options (status_column, featured_column, exact_filters, searchable, sortable, sort_map, etc.)
+     * @param  callable|null  $extraQuery  Optional callback for additional query constraints
+     * @return LengthAwarePaginator The paginated result set
+     *
+     * @throws ValidationException
+     */
     public function fetchWithFilters(
         Model|EloquentBuilder|QueryBuilder $model,
         array $options = [],
@@ -108,6 +129,16 @@ class QueryableHelper extends Helper
         return $query->paginate($perPage)->withQueryString();
     }
 
+    /**
+     * Validate request input parameters for filtered queries.
+     *
+     * Dynamically builds validation rules based on the configured options
+     * (sortable columns, sort map, per_page limits, search, etc.).
+     *
+     * @param  array  $options  Configuration options defining allowed parameters
+     *
+     * @throws ValidationException
+     */
     public function validate(array $options = []): void
     {
         $sortable = $options['sortable'] ?? [];
@@ -140,6 +171,13 @@ class QueryableHelper extends Helper
         request()->validate($rules);
     }
 
+    /**
+     * Check if a given column exists on the query's table.
+     *
+     * @param  EloquentBuilder|QueryBuilder  $query  The query builder instance
+     * @param  string  $column  The column name to check
+     * @return bool True if the column exists, false otherwise
+     */
     protected function hasColumn(EloquentBuilder|QueryBuilder $query, string $column): bool
     {
         $table = $query instanceof EloquentBuilder

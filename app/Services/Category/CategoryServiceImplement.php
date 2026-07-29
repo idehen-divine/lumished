@@ -4,6 +4,7 @@ namespace App\Services\Category;
 
 use App\Enums\ResponseCode;
 use App\Http\Resources\CategoryResource;
+use App\Models\Store;
 use App\Repositories\Category\CategoryRepository;
 use App\Repositories\Store\StoreRepository;
 use App\Traits\LogAndRespond;
@@ -20,6 +21,12 @@ class CategoryServiceImplement extends ServiceApi implements CategoryService
         protected CategoryRepository $categoryRepository,
     ) {}
 
+    /**
+     * Retrieve a store by slug and verify ownership by the authenticated user.
+     *
+     * @param  string  $storeSlug  The store slug
+     * @return Store|null The store if found and owned, otherwise null
+     */
     private function getStoreBySlug(string $storeSlug)
     {
         $store = $this->storeRepository->findBySlug($storeSlug);
@@ -31,6 +38,12 @@ class CategoryServiceImplement extends ServiceApi implements CategoryService
         return $store;
     }
 
+    /**
+     * Retrieve a store by slug without ownership verification.
+     *
+     * @param  string  $storeSlug  The store slug
+     * @return Store|null The store if found, otherwise null
+     */
     private function getPublicStore(string $storeSlug)
     {
         return $this->storeRepository->findBySlug($storeSlug);

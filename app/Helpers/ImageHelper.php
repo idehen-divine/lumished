@@ -12,6 +12,13 @@ class ImageHelper extends Helper
 {
     const QUALITY = '85';
 
+    /**
+     * Store an uploaded file as a WebP image in the temp directory.
+     *
+     * @param  UploadedFile  $file  The uploaded image file
+     * @param  string  $directory  The temp directory path
+     * @return string The temp storage path of the converted image
+     */
     public function storeAndConvert(UploadedFile $file, string $directory): string
     {
         $tempPath = 'temp/'.Str::uuid().'.webp';
@@ -31,6 +38,13 @@ class ImageHelper extends Helper
         return $tempPath;
     }
 
+    /**
+     * Move a file from a temp path to its final storage location.
+     *
+     * @param  string  $tempPath  The current temp storage path
+     * @param  string  $finalPath  The destination storage path
+     * @return string The final storage path
+     */
     public function moveToFinal(string $tempPath, string $finalPath): string
     {
         if (Storage::exists($tempPath)) {
@@ -40,6 +54,11 @@ class ImageHelper extends Helper
         return $finalPath;
     }
 
+    /**
+     * Delete an image file from storage.
+     *
+     * @param  string|null  $path  The storage path to delete
+     */
     public function deleteImage(?string $path): void
     {
         if ($path && Storage::exists($path)) {
@@ -47,16 +66,37 @@ class ImageHelper extends Helper
         }
     }
 
+    /**
+     * Generate the storage path for a store logo.
+     *
+     * @param  string  $storeId  The store UUID
+     * @return string The generated storage path
+     */
     public function generateStoreLogoPath(string $storeId): string
     {
         return "stores/{$storeId}/logo.webp";
     }
 
+    /**
+     * Generate the storage path for a product photo.
+     *
+     * @param  string  $storeId  The store UUID
+     * @param  string  $productId  The product UUID
+     * @return string The generated storage path
+     */
     public function generateProductPhotoPath(string $storeId, string $productId): string
     {
         return "stores/{$storeId}/products/{$productId}/photo.webp";
     }
 
+    /**
+     * Generate the storage path for an extra product photo.
+     *
+     * @param  string  $storeId  The store UUID
+     * @param  string  $productId  The product UUID
+     * @param  int  $index  The photo index (0-based)
+     * @return string The generated storage path
+     */
     public function generateProductExtraPhotoPath(string $storeId, string $productId, int $index): string
     {
         return "stores/{$storeId}/products/{$productId}/extra-{$index}.webp";

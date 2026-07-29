@@ -6,6 +6,7 @@ use App\Enums\ProductStatusEnum;
 use App\Enums\ResponseCode;
 use App\Enums\StoreStatusEnum;
 use App\Http\Resources\ProductResource;
+use App\Models\Store;
 use App\Repositories\Product\ProductRepository;
 use App\Repositories\Store\StoreRepository;
 use App\Traits\LogAndRespond;
@@ -22,6 +23,12 @@ class ProductServiceImplement extends ServiceApi implements ProductService
         protected ProductRepository $productRepository,
     ) {}
 
+    /**
+     * Retrieve a store by slug and verify ownership by the authenticated user.
+     *
+     * @param  string  $storeSlug  The store slug
+     * @return Store|null The store if found and owned, otherwise null
+     */
     private function getStoreBySlug(string $storeSlug)
     {
         $store = $this->storeRepository->findBySlug($storeSlug);
@@ -33,6 +40,12 @@ class ProductServiceImplement extends ServiceApi implements ProductService
         return $store;
     }
 
+    /**
+     * Retrieve an active store by slug for public access.
+     *
+     * @param  string  $storeSlug  The store slug
+     * @return Store|null The store if found and active, otherwise null
+     */
     private function getPublicStore(string $storeSlug)
     {
         $store = $this->storeRepository->findBySlug($storeSlug);
