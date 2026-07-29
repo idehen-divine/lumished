@@ -297,12 +297,11 @@ class AdminAuthController extends Controller
 
     /**
      * Update the authenticated admin's email.
+     * The new email is marked unverified. A verification OTP is sent to the new address.
      *
      * @group Admin Management
      *
      * @subgroup Account
-     *
-     * The new email is marked unverified. A verification OTP is sent to the new address.
      *
      * @bodyParam email string required The new email address. Example: newadmin@example.com
      *
@@ -326,12 +325,11 @@ class AdminAuthController extends Controller
 
     /**
      * Initiate a password change for the authenticated admin.
+     * Sends a verification OTP to the admin's email.
      *
      * @group Admin Management
      *
      * @subgroup Account
-     *
-     * Sends a verification OTP to the admin's email.
      *
      * @response 200 {
      *     "code": 200,
@@ -379,12 +377,11 @@ class AdminAuthController extends Controller
 
     /**
      * Confirm the admin password update.
+     * Current session stays active (unlike password reset).
      *
      * @group Admin Management
      *
      * @subgroup Account
-     *
-     * Current session stays active (unlike password reset).
      *
      * @bodyParam reset_token string required The token from OTP verification. Example: aB3cD5eF7gH9iJ1kL2mN4oP6qR8sT0uV
      * @bodyParam password string required New password (min 8 chars, at least 1 uppercase, 1 digit). Must be confirmed. Example: NewPass1
@@ -404,12 +401,11 @@ class AdminAuthController extends Controller
 
     /**
      * Generate a new 2FA secret for the admin.
+     * Returns a TOTP secret and QR code URL for the authenticator app.
      *
      * @group Admin Management
      *
      * @subgroup Account
-     *
-     * Returns a TOTP secret and QR code URL for the authenticator app.
      *
      * @response 200 {
      *     "code": 200,

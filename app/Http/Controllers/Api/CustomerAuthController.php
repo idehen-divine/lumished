@@ -362,11 +362,11 @@ class CustomerAuthController extends Controller
     /**
      * Update the authenticated user's email.
      *
+     * The new email is marked unverified. A verification OTP is sent to the new address.
+     *
      * @group Customer Management
      *
      * @subgroup Account
-     *
-     * The new email is marked unverified. A verification OTP is sent to the new address.
      *
      * @bodyParam email string required The new email address. Example: newemail@example.com
      *
@@ -391,12 +391,12 @@ class CustomerAuthController extends Controller
     /**
      * Initiate a password change.
      *
+     * Sends a verification OTP to the user's email.
+     * The OTP must be verified before the password can be changed.
+     *
      * @group Customer Management
      *
      * @subgroup Account
-     *
-     * Sends a verification OTP to the user's email.
-     * The OTP must be verified before the password can be changed.
      *
      * @response 200 {
      *     "code": 200,
@@ -445,12 +445,12 @@ class CustomerAuthController extends Controller
     /**
      * Confirm the password update.
      *
+     * Applies the new password after OTP verification.
+     * Current session stays active (unlike password reset).
+     *
      * @group Customer Management
      *
      * @subgroup Account
-     *
-     * Applies the new password after OTP verification.
-     * Current session stays active (unlike password reset).
      *
      * @bodyParam reset_token string required The token from OTP verification. Example: aB3cD5eF7gH9iJ1kL2mN4oP6qR8sT0uV
      * @bodyParam password string required New password (min 8 chars, at least 1 uppercase, 1 digit). Must be confirmed. Example: NewPass1
@@ -471,12 +471,12 @@ class CustomerAuthController extends Controller
     /**
      * Generate a new 2FA secret.
      *
+     * Returns a TOTP secret and QR code URL for the authenticator app.
+     * The secret must be confirmed with a valid TOTP code before activation.
+     *
      * @group Customer Management
      *
      * @subgroup Account
-     *
-     * Returns a TOTP secret and QR code URL for the authenticator app.
-     * The secret must be confirmed with a valid TOTP code before activation.
      *
      * @response 200 {
      *     "code": 200,
@@ -497,11 +497,11 @@ class CustomerAuthController extends Controller
     /**
      * Confirm and activate two-factor authentication.
      *
+     * Validates the TOTP code from the authenticator app and activates 2FA.
+     *
      * @group Customer Management
      *
      * @subgroup Account
-     *
-     * Validates the TOTP code from the authenticator app and activates 2FA.
      *
      * @bodyParam code string required The 6-digit TOTP code from the authenticator app. Example: 123456
      *
@@ -524,11 +524,11 @@ class CustomerAuthController extends Controller
     /**
      * Disable two-factor authentication.
      *
+     * Requires a valid TOTP code from the authenticator app to disable.
+     *
      * @group Customer Management
      *
      * @subgroup Account
-     *
-     * Requires a valid TOTP code from the authenticator app to disable.
      *
      * @bodyParam code string required The 6-digit TOTP code from the authenticator app. Example: 123456
      *
@@ -636,11 +636,11 @@ class CustomerAuthController extends Controller
     /**
      * Delete the authenticated user's account.
      *
+     * Requires the current password. All user data and tokens are deleted.
+     *
      * @group Customer Management
      *
      * @subgroup Account
-     *
-     * Requires the current password. All user data and tokens are deleted.
      *
      * @bodyParam password string required The current password for confirmation. Example: Password1
      *
@@ -659,11 +659,11 @@ class CustomerAuthController extends Controller
     /**
      * Export the authenticated user's personal data.
      *
+     * Returns all user data as JSON for GDPR compliance.
+     *
      * @group Customer Management
      *
      * @subgroup Account
-     *
-     * Returns all user data as JSON for GDPR compliance.
      *
      * @response 200 {
      *     "code": 200,
