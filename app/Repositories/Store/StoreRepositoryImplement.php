@@ -14,15 +14,9 @@ class StoreRepositoryImplement extends Eloquent implements StoreRepository
     }
 
     /** {@inheritDoc} */
-    public function findBySlug(string $slug): ?Store
+    public function getStoreForUser(string $userId): ?Store
     {
-        return $this->model->where('slug', $slug)->first();
-    }
-
-    /** {@inheritDoc} */
-    public function findOwnedBy(string $id, string $userId): ?Store
-    {
-        return $this->model->where('id', $id)->where('user_id', $userId)->first();
+        return $this->model->where('user_id', $userId)->first();
     }
 
     /** {@inheritDoc} */
@@ -42,10 +36,24 @@ class StoreRepositoryImplement extends Eloquent implements StoreRepository
     }
 
     /** {@inheritDoc} */
-    public function getUserStores(string $userId): LengthAwarePaginator
+    public function findActive(string $id): ?Store
     {
-        $query = $this->model->ownedBy($userId);
+        return $this->model->active()->where('id', $id)->first();
+    }
 
-        return helpers()->queryableHelper()->fetchWithFilters($query);
+    /** {@inheritDoc} */
+    public function findActiveBySlugOrDomain(?string $slug, ?string $domain): ?Store
+    {
+        $query = $this->model->active();
+
+        if ($domain) {
+            return $query->whereHas('settings', fn ($q) => $q->where('domain', $domain))->first();
+        }
+
+        if ($slug) {
+            return $query->whereHas('settings', fn ($q) => $q->where('slug', $slug))->first();
+        }
+
+        return null;
     }
 }

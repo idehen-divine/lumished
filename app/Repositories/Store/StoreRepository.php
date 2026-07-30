@@ -6,49 +6,44 @@ use App\Models\Store;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use L0n3ly\LaravelRepositoryWithService\Contracts\Repository;
 
-/**
- * Repository interface for store data access.
- *
- * Defines store-specific queries beyond the default CRUD provided by BaseRepository.
- */
 interface StoreRepository extends Repository
 {
     /**
-     * Find a store by its slug.
+     * Get a store by user ID.
      *
-     * @param  string  $slug  The store slug
-     * @return Store|null The store model if found, otherwise null
+     * @param  string  $userId  The user UUID
+     * @return Store|null The store or null if not found
      */
-    public function findBySlug(string $slug): ?Store;
+    public function getStoreForUser(string $userId): ?Store;
 
     /**
-     * Find a store owned by a specific user.
+     * Get all active stores with pagination.
      *
-     * @param  string  $id  The store UUID
-     * @param  string  $userId  The owner user UUID
-     * @return Store|null The store model if found and owned by the user, otherwise null
-     */
-    public function findOwnedBy(string $id, string $userId): ?Store;
-
-    /**
-     * Retrieve all active stores with pagination.
-     *
-     * @return LengthAwarePaginator A paginated list of active stores
+     * @return LengthAwarePaginator Paginated list of active stores
      */
     public function getAllActive(): LengthAwarePaginator;
 
     /**
-     * Retrieve all stores for admin oversight with pagination.
+     * Get all stores for admin listing with pagination.
      *
-     * @return LengthAwarePaginator A paginated list of all stores
+     * @return LengthAwarePaginator Paginated list of all stores
      */
     public function getAllForAdmin(): LengthAwarePaginator;
 
     /**
-     * Retrieve all stores owned by a specific user with pagination.
+     * Find an active store by ID.
      *
-     * @param  string  $userId  The owner user UUID
-     * @return LengthAwarePaginator A paginated list of the user's stores
+     * @param  string  $id  The store UUID
+     * @return Store|null The active store or null if not found
      */
-    public function getUserStores(string $userId): LengthAwarePaginator;
+    public function findActive(string $id): ?Store;
+
+    /**
+     * Find an active store by its StoreSettings slug or domain.
+     *
+     * @param  string|null  $slug  The store slug
+     * @param  string|null  $domain  The custom domain
+     * @return Store|null The active store or null if not found
+     */
+    public function findActiveBySlugOrDomain(?string $slug, ?string $domain): ?Store;
 }

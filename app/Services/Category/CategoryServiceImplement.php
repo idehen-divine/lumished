@@ -4,7 +4,6 @@ namespace App\Services\Category;
 
 use App\Enums\ResponseCode;
 use App\Http\Resources\CategoryResource;
-use App\Models\Store;
 use App\Repositories\Category\CategoryRepository;
 use App\Repositories\Store\StoreRepository;
 use App\Traits\LogAndRespond;
@@ -21,43 +20,20 @@ class CategoryServiceImplement extends ServiceApi implements CategoryService
         protected CategoryRepository $categoryRepository,
     ) {}
 
-    /**
-     * Retrieve a store by slug and verify ownership by the authenticated user.
-     *
-     * @param  string  $storeSlug  The store slug
-     * @return Store|null The store if found and owned, otherwise null
-     */
-    private function getStoreBySlug(string $storeSlug)
+    private function getUserStore()
     {
-        $store = $this->storeRepository->findBySlug($storeSlug);
-
-        if (! $store || $store->user_id !== Auth::id()) {
-            return null;
-        }
-
-        return $store;
-    }
-
-    /**
-     * Retrieve a store by slug without ownership verification.
-     *
-     * @param  string  $storeSlug  The store slug
-     * @return Store|null The store if found, otherwise null
-     */
-    private function getPublicStore(string $storeSlug)
-    {
-        return $this->storeRepository->findBySlug($storeSlug);
+        return $this->storeRepository->getStoreForUser(Auth::id());
     }
 
     /** {@inheritDoc} */
-    public function getStoreCategories(string $storeSlug): ServiceApi
+    public function getUserStoreCategories(): ServiceApi
     {
         try {
-            $store = $this->getPublicStore($storeSlug);
+            $store = $this->getUserStore();
 
             if (! $store) {
                 return $this->setCode(ResponseCode::NOT_FOUND->value)
-                    ->setMessage('Store not found.');
+                    ->setMessage('You do not have a store yet.');
             }
 
             $categories = $this->categoryRepository->getStoreCategoriesTree($store->id);
@@ -70,34 +46,14 @@ class CategoryServiceImplement extends ServiceApi implements CategoryService
     }
 
     /** {@inheritDoc} */
-    public function getStoreCategoriesForOwner(string $storeSlug): ServiceApi
+    public function createCategory(array $data): ServiceApi
     {
         try {
-            $store = $this->getStoreBySlug($storeSlug);
+            $store = $this->getUserStore();
 
             if (! $store) {
-                return $this->setCode(ResponseCode::FORBIDDEN->value)
-                    ->setMessage('Store not found or access denied.');
-            }
-
-            $categories = $this->categoryRepository->getStoreCategoriesTree($store->id);
-
-            return $this->setCode(ResponseCode::SUCCESS->value)
-                ->setData(['categories' => CategoryResource::collection($categories)]);
-        } catch (\Throwable $e) {
-            return $this->logAndRespond($e);
-        }
-    }
-
-    /** {@inheritDoc} */
-    public function createCategory(string $storeSlug, array $data): ServiceApi
-    {
-        try {
-            $store = $this->getStoreBySlug($storeSlug);
-
-            if (! $store) {
-                return $this->setCode(ResponseCode::FORBIDDEN->value)
-                    ->setMessage('Store not found or access denied.');
+                return $this->setCode(ResponseCode::NOT_FOUND->value)
+                    ->setMessage('You do not have a store yet.');
             }
 
             $data['store_id'] = $store->id;
@@ -113,14 +69,14 @@ class CategoryServiceImplement extends ServiceApi implements CategoryService
     }
 
     /** {@inheritDoc} */
-    public function getCategory(string $storeSlug, string $id): ServiceApi
+    public function getCategory(string $id): ServiceApi
     {
         try {
-            $store = $this->getStoreBySlug($storeSlug);
+            $store = $this->getUserStore();
 
             if (! $store) {
-                return $this->setCode(ResponseCode::FORBIDDEN->value)
-                    ->setMessage('Store not found or access denied.');
+                return $this->setCode(ResponseCode::NOT_FOUND->value)
+                    ->setMessage('You do not have a store yet.');
             }
 
             $category = $this->categoryRepository->findOwnedByStore($id, $store->id);
@@ -138,14 +94,14 @@ class CategoryServiceImplement extends ServiceApi implements CategoryService
     }
 
     /** {@inheritDoc} */
-    public function updateCategory(string $storeSlug, string $id, array $data): ServiceApi
+    public function updateCategory(string $id, array $data): ServiceApi
     {
         try {
-            $store = $this->getStoreBySlug($storeSlug);
+            $store = $this->getUserStore();
 
             if (! $store) {
-                return $this->setCode(ResponseCode::FORBIDDEN->value)
-                    ->setMessage('Store not found or access denied.');
+                return $this->setCode(ResponseCode::NOT_FOUND->value)
+                    ->setMessage('You do not have a store yet.');
             }
 
             $category = $this->categoryRepository->findOwnedByStore($id, $store->id);
@@ -182,14 +138,14 @@ class CategoryServiceImplement extends ServiceApi implements CategoryService
     }
 
     /** {@inheritDoc} */
-    public function deleteCategory(string $storeSlug, string $id): ServiceApi
+    public function deleteCategory(string $id): ServiceApi
     {
         try {
-            $store = $this->getStoreBySlug($storeSlug);
+            $store = $this->getUserStore();
 
             if (! $store) {
-                return $this->setCode(ResponseCode::FORBIDDEN->value)
-                    ->setMessage('Store not found or access denied.');
+                return $this->setCode(ResponseCode::NOT_FOUND->value)
+                    ->setMessage('You do not have a store yet.');
             }
 
             $category = $this->categoryRepository->findOwnedByStore($id, $store->id);
@@ -219,6 +175,36 @@ class CategoryServiceImplement extends ServiceApi implements CategoryService
             DB::rollBack();
 
             return $this->logAndRespond($e, 'Failed to delete category.');
+        }
+    }
+
+    /** {@inheritDoc} */
+    public function getStoreCategories(string $storeId): ServiceApi
+    {
+        try {
+            $categories = $this->categoryRepository->getStoreCategoriesTree($storeId);
+
+            return $this->setCode(ResponseCode::SUCCESS->value)
+                ->setData(['categories' => CategoryResource::collection($categories)]);
+        } catch (\Throwable $e) {
+            return $this->logAndRespond($e);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public function getStoreCategoriesBySlugOrDomain(?string $slug, ?string $domain): ServiceApi
+    {
+        try {
+            $store = $this->storeRepository->findActiveBySlugOrDomain($slug, $domain);
+
+            if (! $store) {
+                return $this->setCode(ResponseCode::NOT_FOUND->value)
+                    ->setMessage('Store not found.');
+            }
+
+            return $this->getStoreCategories($store->id);
+        } catch (\Throwable $e) {
+            return $this->logAndRespond($e);
         }
     }
 }

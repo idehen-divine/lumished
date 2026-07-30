@@ -6,43 +6,38 @@ use App\Models\Product;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use L0n3ly\LaravelRepositoryWithService\Contracts\Repository;
 
-/**
- * Repository interface for product data access.
- *
- * Defines product-specific queries including status filtering and ownership checks.
- */
 interface ProductRepository extends Repository
 {
     /**
-     * Retrieve paginated products for a store (all statuses).
+     * Get paginated products for a store.
      *
      * @param  string  $storeId  The store UUID
-     * @return LengthAwarePaginator A paginated list of products
+     * @return LengthAwarePaginator Paginated list of products
      */
     public function getStoreProducts(string $storeId): LengthAwarePaginator;
 
     /**
-     * Retrieve paginated published products for a store.
+     * Get paginated published products for a store.
      *
      * @param  string  $storeId  The store UUID
-     * @return LengthAwarePaginator A paginated list of published products
+     * @return LengthAwarePaginator Paginated list of published products
      */
     public function getPublishedProducts(string $storeId): LengthAwarePaginator;
 
     /**
-     * Find a published product by its UUID.
+     * Find a published product by ID.
      *
      * @param  string  $id  The product UUID
-     * @return Product|null The product model if found and published, otherwise null
+     * @return Product|null The published product or null if not found
      */
     public function findPublished(string $id): ?Product;
 
     /**
-     * Find a product by ID that belongs to a specific store.
+     * Find a product owned by a specific store.
      *
      * @param  string  $id  The product UUID
      * @param  string  $storeId  The store UUID
-     * @return Product|null The product model if found and owned by the store, otherwise null
+     * @return Product|null The product or null if not found
      */
     public function findOwnedByStore(string $id, string $storeId): ?Product;
 

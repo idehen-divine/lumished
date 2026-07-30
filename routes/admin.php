@@ -23,31 +23,31 @@ Route::prefix('v1')->group(function () {
         /**********************    Admin Store Routes    ***********************/
         Route::prefix('stores')->name('stores.')->controller(AdminStoreController::class)->group(function () {
             Route::get('/', 'index')->name('index');
-            Route::get('/{id}', 'show')->name('show');
-            Route::put('/{id}/status', 'updateStatus')->name('status.update');
+            Route::get('/{store}', 'show')->name('show');
+            Route::put('/{store}/status', 'updateStatus')->name('status.update');
         });
 
-        Route::prefix('store/{storeSlug}')->name('stores.')->controller(AdminStoreController::class)->group(function () {
+        Route::prefix('stores/{store}')->name('stores.')->controller(AdminStoreController::class)->group(function () {
             Route::get('/products', 'products')->name('products');
         });
+    });
 
-        /**********************    Account Routes    ***********************/
-        Route::prefix('account')->name('account.')->group(function () {
+    /**********************    Account Routes    ***********************/
+    Route::middleware(['auth:sanctum', 'admin', 'verified'])->prefix('account')->name('account.')->group(function () {
 
-            /**********************    Security Routes    ***********************/
-            Route::prefix('security')->name('security.')->controller(AdminAuthController::class)->group(function () {
-                Route::patch('/email/update', 'updateEmail')->name('email.update')->withoutMiddleware('verified');
-                Route::post('/email/verify', 'verifyEmail')->name('email.verify')->withoutMiddleware('verified');
-                Route::post('/email/resend', 'resendVerificationEmail')->name('email.resend')->withoutMiddleware('verified');
-                Route::post('/2fa/setup', 'setupTwoFactor')->name('2fa.setup');
-                Route::post('/2fa/confirm', 'confirmTwoFactor')->name('2fa.confirm');
-                Route::delete('/2fa', 'disableTwoFactor')->name('2fa.disable');
-                Route::patch('/password/update', 'initiatePasswordChange')->name('password.update');
-                Route::post('/password/update/verify', 'verifyPasswordChangeOtp')->name('password.update.verify');
-                Route::post('/password/update/confirm', 'confirmPasswordUpdate')->name('password.update.confirm');
-                Route::delete('/account', 'deleteAccount')->name('account.delete');
-                Route::get('/account/export', 'exportData')->name('account.export');
-            });
+        /**********************    Security Routes    ***********************/
+        Route::prefix('security')->name('security.')->controller(AdminAuthController::class)->group(function () {
+            Route::patch('/email/update', 'updateEmail')->name('email.update')->withoutMiddleware('verified');
+            Route::post('/email/verify', 'verifyEmail')->name('email.verify')->withoutMiddleware('verified');
+            Route::post('/email/resend', 'resendVerificationEmail')->name('email.resend')->withoutMiddleware('verified');
+            Route::post('/2fa/setup', 'setupTwoFactor')->name('2fa.setup');
+            Route::post('/2fa/confirm', 'confirmTwoFactor')->name('2fa.confirm');
+            Route::delete('/2fa', 'disableTwoFactor')->name('2fa.disable');
+            Route::patch('/password/update', 'initiatePasswordChange')->name('password.update');
+            Route::post('/password/update/verify', 'verifyPasswordChangeOtp')->name('password.update.verify');
+            Route::post('/password/update/confirm', 'confirmPasswordUpdate')->name('password.update.confirm');
+            Route::delete('/account', 'deleteAccount')->name('account.delete');
+            Route::get('/account/export', 'exportData')->name('account.export');
         });
     });
 

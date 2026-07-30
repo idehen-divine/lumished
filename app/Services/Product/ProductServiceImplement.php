@@ -4,9 +4,7 @@ namespace App\Services\Product;
 
 use App\Enums\ProductStatusEnum;
 use App\Enums\ResponseCode;
-use App\Enums\StoreStatusEnum;
 use App\Http\Resources\ProductResource;
-use App\Models\Store;
 use App\Repositories\Product\ProductRepository;
 use App\Repositories\Store\StoreRepository;
 use App\Traits\LogAndRespond;
@@ -23,49 +21,20 @@ class ProductServiceImplement extends ServiceApi implements ProductService
         protected ProductRepository $productRepository,
     ) {}
 
-    /**
-     * Retrieve a store by slug and verify ownership by the authenticated user.
-     *
-     * @param  string  $storeSlug  The store slug
-     * @return Store|null The store if found and owned, otherwise null
-     */
-    private function getStoreBySlug(string $storeSlug)
+    private function getUserStore()
     {
-        $store = $this->storeRepository->findBySlug($storeSlug);
-
-        if (! $store || $store->user_id !== Auth::id()) {
-            return null;
-        }
-
-        return $store;
-    }
-
-    /**
-     * Retrieve an active store by slug for public access.
-     *
-     * @param  string  $storeSlug  The store slug
-     * @return Store|null The store if found and active, otherwise null
-     */
-    private function getPublicStore(string $storeSlug)
-    {
-        $store = $this->storeRepository->findBySlug($storeSlug);
-
-        if (! $store || $store->status->name !== StoreStatusEnum::ACTIVE->name) {
-            return null;
-        }
-
-        return $store;
+        return $this->storeRepository->getStoreForUser(Auth::id());
     }
 
     /** {@inheritDoc} */
-    public function getStoreProducts(string $storeSlug): ServiceApi
+    public function getStoreProducts(): ServiceApi
     {
         try {
-            $store = $this->getStoreBySlug($storeSlug);
+            $store = $this->getUserStore();
 
             if (! $store) {
-                return $this->setCode(ResponseCode::FORBIDDEN->value)
-                    ->setMessage('Store not found or access denied.');
+                return $this->setCode(ResponseCode::NOT_FOUND->value)
+                    ->setMessage('You do not have a store yet.');
             }
 
             $products = $this->productRepository->getStoreProducts($store->id);
@@ -82,14 +51,14 @@ class ProductServiceImplement extends ServiceApi implements ProductService
     }
 
     /** {@inheritDoc} */
-    public function createProduct(string $storeSlug, array $data): ServiceApi
+    public function createProduct(array $data): ServiceApi
     {
         try {
-            $store = $this->getStoreBySlug($storeSlug);
+            $store = $this->getUserStore();
 
             if (! $store) {
-                return $this->setCode(ResponseCode::FORBIDDEN->value)
-                    ->setMessage('Store not found or access denied.');
+                return $this->setCode(ResponseCode::NOT_FOUND->value)
+                    ->setMessage('You do not have a store yet.');
             }
 
             $data['store_id'] = $store->id;
@@ -163,14 +132,14 @@ class ProductServiceImplement extends ServiceApi implements ProductService
     }
 
     /** {@inheritDoc} */
-    public function getProduct(string $storeSlug, string $id): ServiceApi
+    public function getProduct(string $id): ServiceApi
     {
         try {
-            $store = $this->getStoreBySlug($storeSlug);
+            $store = $this->getUserStore();
 
             if (! $store) {
-                return $this->setCode(ResponseCode::FORBIDDEN->value)
-                    ->setMessage('Store not found or access denied.');
+                return $this->setCode(ResponseCode::NOT_FOUND->value)
+                    ->setMessage('You do not have a store yet.');
             }
 
             $product = $this->productRepository->findOwnedByStore($id, $store->id);
@@ -190,14 +159,14 @@ class ProductServiceImplement extends ServiceApi implements ProductService
     }
 
     /** {@inheritDoc} */
-    public function updateProduct(string $storeSlug, string $id, array $data): ServiceApi
+    public function updateProduct(string $id, array $data): ServiceApi
     {
         try {
-            $store = $this->getStoreBySlug($storeSlug);
+            $store = $this->getUserStore();
 
             if (! $store) {
-                return $this->setCode(ResponseCode::FORBIDDEN->value)
-                    ->setMessage('Store not found or access denied.');
+                return $this->setCode(ResponseCode::NOT_FOUND->value)
+                    ->setMessage('You do not have a store yet.');
             }
 
             $product = $this->productRepository->findOwnedByStore($id, $store->id);
@@ -287,14 +256,14 @@ class ProductServiceImplement extends ServiceApi implements ProductService
     }
 
     /** {@inheritDoc} */
-    public function deleteProduct(string $storeSlug, string $id): ServiceApi
+    public function deleteProduct(string $id): ServiceApi
     {
         try {
-            $store = $this->getStoreBySlug($storeSlug);
+            $store = $this->getUserStore();
 
             if (! $store) {
-                return $this->setCode(ResponseCode::FORBIDDEN->value)
-                    ->setMessage('Store not found or access denied.');
+                return $this->setCode(ResponseCode::NOT_FOUND->value)
+                    ->setMessage('You do not have a store yet.');
             }
 
             $product = $this->productRepository->findOwnedByStore($id, $store->id);
@@ -322,17 +291,10 @@ class ProductServiceImplement extends ServiceApi implements ProductService
     }
 
     /** {@inheritDoc} */
-    public function getPublishedProducts(string $storeSlug): ServiceApi
+    public function getPublishedProducts(string $storeId): ServiceApi
     {
         try {
-            $store = $this->getPublicStore($storeSlug);
-
-            if (! $store) {
-                return $this->setCode(ResponseCode::NOT_FOUND->value)
-                    ->setMessage('Store not found.');
-            }
-
-            $products = $this->productRepository->getPublishedProducts($store->id);
+            $products = $this->productRepository->getPublishedProducts($storeId);
 
             return $this->setCode(ResponseCode::SUCCESS->value)
                 ->setMessage('Products retrieved successfully.')
@@ -340,6 +302,23 @@ class ProductServiceImplement extends ServiceApi implements ProductService
                     'products' => ProductResource::collection($products),
                     'pagination' => helpers()->queryableHelper()->getPagination($products),
                 ]);
+        } catch (\Throwable $e) {
+            return $this->logAndRespond($e);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public function getPublishedProductsBySlugOrDomain(?string $slug, ?string $domain): ServiceApi
+    {
+        try {
+            $store = $this->storeRepository->findActiveBySlugOrDomain($slug, $domain);
+
+            if (! $store) {
+                return $this->setCode(ResponseCode::NOT_FOUND->value)
+                    ->setMessage('Store not found.');
+            }
+
+            return $this->getPublishedProducts($store->id);
         } catch (\Throwable $e) {
             return $this->logAndRespond($e);
         }
@@ -364,17 +343,10 @@ class ProductServiceImplement extends ServiceApi implements ProductService
     }
 
     /** {@inheritDoc} */
-    public function getAdminStoreProducts(string $storeSlug): ServiceApi
+    public function getAdminStoreProducts(string $storeId): ServiceApi
     {
         try {
-            $store = $this->storeRepository->findBySlug($storeSlug);
-
-            if (! $store) {
-                return $this->setCode(ResponseCode::NOT_FOUND->value)
-                    ->setMessage('Store not found.');
-            }
-
-            $products = $this->productRepository->getStoreProducts($store->id);
+            $products = $this->productRepository->getStoreProducts($storeId);
 
             return $this->setCode(ResponseCode::SUCCESS->value)
                 ->setMessage('Products retrieved successfully.')

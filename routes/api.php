@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\PublicStoreController;
+use App\Http\Controllers\Api\StoreController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -9,10 +9,8 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 /**********************    Public Store Routes    ***********************/
-Route::prefix('v1')->middleware('throttle:60,1')->controller(PublicStoreController::class)->group(function () {
-    Route::get('/stores', 'index')->name('public.stores.index');
-    Route::get('/stores/{slug}', 'show')->name('public.stores.show');
-    Route::get('/stores/{slug}/products', 'products')->name('public.stores.products');
-    Route::get('/stores/{slug}/categories', 'categories')->name('public.stores.categories');
-    Route::get('/products/{id}', 'showProduct')->name('public.products.show');
+Route::prefix('v1')->middleware('throttle:60,1')->controller(StoreController::class)->group(function () {
+    Route::get('/store', 'showPublic')->name('public.store.show');
+    Route::get('/store/products', 'publicProducts')->name('public.store.products');
+    Route::get('/store/categories', 'publicCategories')->name('public.store.categories');
 });

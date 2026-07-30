@@ -8,75 +8,75 @@ use L0n3ly\LaravelRepositoryWithService\Services\ServiceApi;
 interface ProductService extends BaseService
 {
     /**
-     * Retrieve a paginated list of products for the authenticated customer's store.
+     * Get paginated products for the authenticated user's store.
      *
-     * @param  string  $storeSlug  The store slug
-     * @return ServiceApi The service API response with paginated products
+     * @return ServiceApi The service response with paginated products
      */
-    public function getStoreProducts(string $storeSlug): ServiceApi;
+    public function getStoreProducts(): ServiceApi;
 
     /**
-     * Create a new product under a store.
+     * Create a new product under the authenticated user's store.
      *
-     * Products default to DRAFT status. Must be assigned to at least one category.
-     *
-     * @param  string  $storeSlug  The store slug
-     * @param  array  $data  The product data (name, description, price, category_ids, etc.)
-     * @return ServiceApi The service API response with the created product resource
+     * @param  array  $data  The product data (name, description, price, etc.)
+     * @return ServiceApi The service response with the created product
      */
-    public function createProduct(string $storeSlug, array $data): ServiceApi;
+    public function createProduct(array $data): ServiceApi;
 
     /**
-     * Retrieve a single product by its UUID.
+     * Get a single product by UUID.
      *
-     * @param  string  $storeSlug  The store slug
      * @param  string  $id  The product UUID
-     * @return ServiceApi The service API response with the product resource
+     * @return ServiceApi The service response with the product
      */
-    public function getProduct(string $storeSlug, string $id): ServiceApi;
+    public function getProduct(string $id): ServiceApi;
 
     /**
-     * Update an existing product.
+     * Update a product.
      *
-     * @param  string  $storeSlug  The store slug
      * @param  string  $id  The product UUID
-     * @param  array  $data  The product update data
-     * @return ServiceApi The service API response with the updated product resource
+     * @param  array  $data  The product data to update
+     * @return ServiceApi The service response with the updated product
      */
-    public function updateProduct(string $storeSlug, string $id, array $data): ServiceApi;
+    public function updateProduct(string $id, array $data): ServiceApi;
 
     /**
      * Delete a product.
      *
-     * @param  string  $storeSlug  The store slug
      * @param  string  $id  The product UUID
-     * @return ServiceApi The service API response indicating deletion success
+     * @return ServiceApi The service response
      */
-    public function deleteProduct(string $storeSlug, string $id): ServiceApi;
+    public function deleteProduct(string $id): ServiceApi;
 
     /**
-     * Retrieve published products for public browsing.
+     * Get published products for a store.
      *
-     * @param  string  $storeSlug  The store slug
-     * @return ServiceApi The service API response with paginated published products
+     * @param  string  $storeId  The store UUID
+     * @return ServiceApi The service response with paginated published products
      */
-    public function getPublishedProducts(string $storeSlug): ServiceApi;
+    public function getPublishedProducts(string $storeId): ServiceApi;
 
     /**
-     * Retrieve a single published product by its UUID.
+     * Get published products for public viewing by slug or domain.
+     *
+     * @param  string|null  $slug  The store slug
+     * @param  string|null  $domain  The custom domain
+     * @return ServiceApi The service response with paginated published products
+     */
+    public function getPublishedProductsBySlugOrDomain(?string $slug, ?string $domain): ServiceApi;
+
+    /**
+     * Show a single published product.
      *
      * @param  string  $id  The product UUID
-     * @return ServiceApi The service API response with the published product resource
+     * @return ServiceApi The service response with the published product
      */
     public function showPublished(string $id): ServiceApi;
 
     /**
-     * Retrieve all products in a store for admin oversight.
+     * Get all products in a store for admin.
      *
-     * Includes products of all statuses (DRAFT, PUBLISHED, ARCHIVED).
-     *
-     * @param  string  $storeSlug  The store slug
-     * @return ServiceApi The service API response with paginated products
+     * @param  string  $storeId  The store UUID
+     * @return ServiceApi The service response with paginated products
      */
-    public function getAdminStoreProducts(string $storeSlug): ServiceApi;
+    public function getAdminStoreProducts(string $storeId): ServiceApi;
 }

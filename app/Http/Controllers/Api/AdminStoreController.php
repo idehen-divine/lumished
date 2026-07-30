@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Store\UpdateStoreStatusRequest;
+use App\Models\Store;
 use App\Services\Product\ProductService;
 use App\Services\Store\StoreService;
 use Illuminate\Http\JsonResponse;
@@ -34,7 +35,6 @@ class AdminStoreController extends Controller
      *             {
      *                 "id": "01953801-abcd-1234-5678-1234567890ab",
      *                 "name": "My Store",
-     *                 "slug": "my-store",
      *                 "description": "A great store for all your needs.",
      *                 "tagline": "Best prices in town",
      *                 "logo_url": "https://example.com/logo.png",
@@ -84,7 +84,7 @@ class AdminStoreController extends Controller
      *
      * @authenticated
      *
-     * @urlParam id string required The store UUID. Example: 01953801-abcd-1234-5678-1234567890ab
+     * @urlParam store string required The store UUID. Example: 01953801-abcd-1234-5678-1234567890ab
      *
      * @response 200 scenario="Success" {
      *     "code": 200,
@@ -93,7 +93,6 @@ class AdminStoreController extends Controller
      *         "store": {
      *             "id": "01953801-abcd-1234-5678-1234567890ab",
      *             "name": "My Store",
-     *             "slug": "my-store",
      *             "description": "A great store for all your needs.",
      *             "tagline": "Best prices in town",
      *             "logo_url": "https://example.com/logo.png",
@@ -121,9 +120,9 @@ class AdminStoreController extends Controller
      *     "message": "An unexpected error occurred. Please try again later."
      * }
      */
-    public function show(string $id): JsonResponse
+    public function show(Store $store): JsonResponse
     {
-        return $this->storeService->showForAdmin($id)->toJson();
+        return $this->storeService->showForAdmin($store->id)->toJson();
     }
 
     /**
@@ -137,7 +136,7 @@ class AdminStoreController extends Controller
      *
      * @authenticated
      *
-     * @urlParam id string required The store UUID. Example: 01953801-abcd-1234-5678-1234567890ab
+     * @urlParam store string required The store UUID. Example: 01953801-abcd-1234-5678-1234567890ab
      *
      * @bodyParam status string required The new status. Must be ACTIVE, INACTIVE, or SUSPENDED. Example: ACTIVE
      *
@@ -148,7 +147,6 @@ class AdminStoreController extends Controller
      *         "store": {
      *             "id": "01953801-abcd-1234-5678-1234567890ab",
      *             "name": "My Store",
-     *             "slug": "my-store",
      *             "description": "A great store for all your needs.",
      *             "tagline": "Best prices in town",
      *             "logo_url": "https://example.com/logo.png",
@@ -172,6 +170,7 @@ class AdminStoreController extends Controller
      *     "message": "Store not found."
      * }
      * @response 422 scenario="Validation Error" {
+     *     "code": 422,
      *     "message": "The given data was invalid.",
      *     "errors": {
      *         "status": ["The selected status is invalid."]
@@ -182,9 +181,9 @@ class AdminStoreController extends Controller
      *     "message": "Failed to update store status."
      * }
      */
-    public function updateStatus(UpdateStoreStatusRequest $request, string $id): JsonResponse
+    public function updateStatus(UpdateStoreStatusRequest $request, Store $store): JsonResponse
     {
-        return $this->storeService->updateStatus($id, $request->validated()['status'])->toJson();
+        return $this->storeService->updateStatus($store->id, $request->validated()['status'])->toJson();
     }
 
     /**
@@ -198,7 +197,7 @@ class AdminStoreController extends Controller
      *
      * @authenticated
      *
-     * @urlParam storeSlug string required The store slug. Example: my-store
+     * @urlParam store string required The store UUID. Example: 01953801-abcd-1234-5678-1234567890ab
      *
      * @response 200 scenario="Success" {
      *     "code": 200,
@@ -216,6 +215,19 @@ class AdminStoreController extends Controller
      *                 "photo": "https://example.com/photos/product.jpg",
      *                 "photos": ["https://example.com/photos/product-1.jpg", "https://example.com/photos/product-2.jpg"],
      *                 "status": "PUBLISHED",
+     *                 "categories": [
+     *                     {
+     *                         "id": "01953801-efgh-5678-9012-1234567890cd",
+     *                         "store_id": "01953801-abcd-1234-5678-1234567890ab",
+     *                         "parent_id": null,
+     *                         "name": "Electronics",
+     *                         "slug": "electronics",
+     *                         "description": "Electronic gadgets and accessories",
+     *                         "children": [],
+     *                         "products_count": 15,
+     *                         "created_at": "2026-07-21 12:00:00"
+     *                     }
+     *                 ],
      *                 "created_at": "2026-07-21 12:00:00"
      *             }
      *         ],
@@ -245,8 +257,8 @@ class AdminStoreController extends Controller
      *     "message": "An unexpected error occurred. Please try again later."
      * }
      */
-    public function products(string $storeSlug): JsonResponse
+    public function products(Store $store): JsonResponse
     {
-        return $this->productService->getAdminStoreProducts($storeSlug)->toJson();
+        return $this->productService->getAdminStoreProducts($store->id)->toJson();
     }
 }

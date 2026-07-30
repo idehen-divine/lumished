@@ -24,6 +24,11 @@ class StoreServiceImplement extends ServiceApi implements StoreService
     public function createStore(array $data): ServiceApi
     {
         try {
+            if ($this->storeRepository->getStoreForUser(Auth::id())) {
+                return $this->setCode(ResponseCode::VALIDATION_ERROR->value)
+                    ->setMessage('You already have a store. Only one store per account is allowed.');
+            }
+
             $data['user_id'] = Auth::id();
             $data['status'] = StoreStatusEnum::ACTIVE->name;
 
@@ -60,31 +65,14 @@ class StoreServiceImplement extends ServiceApi implements StoreService
     }
 
     /** {@inheritDoc} */
-    public function getUserStores(): ServiceApi
+    public function getUserStore(): ServiceApi
     {
         try {
-            $stores = $this->storeRepository->getUserStores(Auth::id());
-
-            return $this->setCode(ResponseCode::SUCCESS->value)
-                ->setMessage('Stores retrieved successfully.')
-                ->setData([
-                    'stores' => StoreResource::collection($stores),
-                    'pagination' => helpers()->queryableHelper()->getPagination($stores),
-                ]);
-        } catch (\Throwable $e) {
-            return $this->logAndRespond($e);
-        }
-    }
-
-    /** {@inheritDoc} */
-    public function getStore(string $id): ServiceApi
-    {
-        try {
-            $store = $this->storeRepository->findOwnedBy($id, Auth::id());
+            $store = $this->storeRepository->getStoreForUser(Auth::id());
 
             if (! $store) {
                 return $this->setCode(ResponseCode::NOT_FOUND->value)
-                    ->setMessage('Store not found.');
+                    ->setMessage('You do not have a store yet.');
             }
 
             return $this->setCode(ResponseCode::SUCCESS->value)
@@ -95,10 +83,10 @@ class StoreServiceImplement extends ServiceApi implements StoreService
     }
 
     /** {@inheritDoc} */
-    public function updateStore(string $id, array $data): ServiceApi
+    public function updateStore(array $data): ServiceApi
     {
         try {
-            $store = $this->storeRepository->findOwnedBy($id, Auth::id());
+            $store = $this->storeRepository->getStoreForUser(Auth::id());
 
             if (! $store) {
                 return $this->setCode(ResponseCode::NOT_FOUND->value)
@@ -116,7 +104,7 @@ class StoreServiceImplement extends ServiceApi implements StoreService
                 $storePath = imageHelper()->moveToFinal($logoPath, $finalPath);
                 $data['logo_url'] = $storePath;
 
-                $this->storeRepository->update($id, $data);
+                $this->storeRepository->update($store->id, $data);
 
                 DB::commit();
 
@@ -124,10 +112,10 @@ class StoreServiceImplement extends ServiceApi implements StoreService
                     imageHelper()->deleteImage($oldLogo);
                 }
             } else {
-                $this->storeRepository->update($id, $data);
+                $this->storeRepository->update($store->id, $data);
             }
 
-            $store = $this->storeRepository->find($id);
+            $store = $this->storeRepository->find($store->id);
 
             return $this->setCode(ResponseCode::SUCCESS->value)
                 ->setMessage('Store updated successfully.')
@@ -140,17 +128,17 @@ class StoreServiceImplement extends ServiceApi implements StoreService
     }
 
     /** {@inheritDoc} */
-    public function deleteStore(string $id): ServiceApi
+    public function deleteStore(): ServiceApi
     {
         try {
-            $store = $this->storeRepository->findOwnedBy($id, Auth::id());
+            $store = $this->storeRepository->getStoreForUser(Auth::id());
 
             if (! $store) {
                 return $this->setCode(ResponseCode::NOT_FOUND->value)
                     ->setMessage('Store not found.');
             }
 
-            $this->storeRepository->delete($id);
+            $this->storeRepository->delete($store->id);
 
             return $this->setCode(ResponseCode::SUCCESS->value)
                 ->setMessage('Store deleted successfully.');
@@ -177,17 +165,33 @@ class StoreServiceImplement extends ServiceApi implements StoreService
     }
 
     /** {@inheritDoc} */
-    public function showBySlug(string $slug): ServiceApi
+    public function showForPublic(string $id): ServiceApi
     {
         try {
-            $store = $this->storeRepository->findBySlug($slug);
+            $store = $this->storeRepository->findActive($id);
 
-            if (! $store || $store->status !== StoreStatusEnum::ACTIVE) {
+            if (! $store) {
                 return $this->setCode(ResponseCode::NOT_FOUND->value)
                     ->setMessage('Store not found.');
             }
 
-            $store->loadCount('products');
+            return $this->setCode(ResponseCode::SUCCESS->value)
+                ->setData(['store' => new PublicStoreResource($store)]);
+        } catch (\Throwable $e) {
+            return $this->logAndRespond($e);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public function showForPublicBySlugOrDomain(?string $slug, ?string $domain): ServiceApi
+    {
+        try {
+            $store = $this->storeRepository->findActiveBySlugOrDomain($slug, $domain);
+
+            if (! $store) {
+                return $this->setCode(ResponseCode::NOT_FOUND->value)
+                    ->setMessage('Store not found.');
+            }
 
             return $this->setCode(ResponseCode::SUCCESS->value)
                 ->setData(['store' => new PublicStoreResource($store)]);

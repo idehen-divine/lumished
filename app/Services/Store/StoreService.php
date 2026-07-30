@@ -8,83 +8,82 @@ use L0n3ly\LaravelRepositoryWithService\Services\ServiceApi;
 interface StoreService extends BaseService
 {
     /**
-     * Create a new store for the authenticated customer.
+     * Create a new store for the authenticated user.
      *
-     * @param  array  $data  The store creation data (name, description, address, etc.)
-     * @return ServiceApi The service API response with the created store resource
+     * @param  array  $data  The store data (name, description, tagline, currency, etc.)
+     * @return ServiceApi The service response with the created store
      */
     public function createStore(array $data): ServiceApi;
 
     /**
-     * Retrieve all stores owned by the authenticated customer.
+     * Get the authenticated user's store.
      *
-     * @return ServiceApi The service API response with a paginated list of stores
+     * @return ServiceApi The service response with the user's store
      */
-    public function getUserStores(): ServiceApi;
+    public function getUserStore(): ServiceApi;
 
     /**
-     * Retrieve a single store by its UUID.
+     * Update the authenticated user's store.
      *
-     * @param  string  $id  The store UUID
-     * @return ServiceApi The service API response with the store resource
+     * @param  array  $data  The store data to update
+     * @return ServiceApi The service response with the updated store
      */
-    public function getStore(string $id): ServiceApi;
+    public function updateStore(array $data): ServiceApi;
 
     /**
-     * Update an existing store.
+     * Delete the authenticated user's store.
      *
-     * @param  string  $id  The store UUID
-     * @param  array  $data  The store update data
-     * @return ServiceApi The service API response with the updated store resource
+     * @return ServiceApi The service response
      */
-    public function updateStore(string $id, array $data): ServiceApi;
+    public function deleteStore(): ServiceApi;
 
     /**
-     * Delete a store and its associated resources.
+     * Get all active stores for public listing.
      *
-     * @param  string  $id  The store UUID
-     * @return ServiceApi The service API response indicating deletion success
-     */
-    public function deleteStore(string $id): ServiceApi;
-
-    /**
-     * Retrieve all active stores for public browsing.
-     *
-     * @return ServiceApi The service API response with a paginated list of active stores
+     * @return ServiceApi The service response with paginated active stores
      */
     public function getAllActive(): ServiceApi;
 
     /**
-     * Retrieve a single active store by its slug.
-     *
-     * @param  string  $slug  The store slug
-     * @return ServiceApi The service API response with the public store resource
-     */
-    public function showBySlug(string $slug): ServiceApi;
-
-    /**
-     * Retrieve all stores for admin oversight.
-     *
-     * Includes all stores regardless of status.
-     *
-     * @return ServiceApi The service API response with a paginated list of all stores
-     */
-    public function getAllForAdmin(): ServiceApi;
-
-    /**
-     * Retrieve a single store's full details for admin review.
+     * Get a store's full details for admin review.
      *
      * @param  string  $id  The store UUID
-     * @return ServiceApi The service API response with the full store resource
+     * @return ServiceApi The service response with the store details
      */
     public function showForAdmin(string $id): ServiceApi;
 
     /**
-     * Update a store's status (activate, deactivate, suspend).
+     * Get a store for public viewing by ID.
      *
      * @param  string  $id  The store UUID
-     * @param  string  $status  The new status (ACTIVE, INACTIVE, or SUSPENDED)
-     * @return ServiceApi The service API response with the updated store resource
+     * @return ServiceApi The service response with the public store data
+     */
+    public function showForPublic(string $id): ServiceApi;
+
+    /**
+     * Get a store for public viewing by slug or domain.
+     *
+     * Looks up the store using its StoreSettings slug or custom domain.
+     *
+     * @param  string|null  $slug  The store slug
+     * @param  string|null  $domain  The custom domain
+     * @return ServiceApi The service response with the public store data
+     */
+    public function showForPublicBySlugOrDomain(?string $slug, ?string $domain): ServiceApi;
+
+    /**
+     * Get all stores for admin listing.
+     *
+     * @return ServiceApi The service response with paginated stores
+     */
+    public function getAllForAdmin(): ServiceApi;
+
+    /**
+     * Update a store's status.
+     *
+     * @param  string  $id  The store UUID
+     * @param  string  $status  The new status (ACTIVE, INACTIVE, SUSPENDED)
+     * @return ServiceApi The service response with the updated store
      */
     public function updateStatus(string $id, string $status): ServiceApi;
 }

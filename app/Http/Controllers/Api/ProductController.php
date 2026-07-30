@@ -13,17 +13,15 @@ class ProductController extends Controller
     public function __construct(protected ProductService $productService) {}
 
     /**
-     * List products for a store.
+     * List products for the store.
      *
-     * Retrieves a paginated list of products belonging to the authenticated customer's store.
+     * Retrieves a paginated list of products belonging to the authenticated customer store.
      *
      * @group Customer Management
      *
      * @subgroup Products
      *
      * @authenticated
-     *
-     * @urlParam storeSlug string required The store slug. Example: my-store
      *
      * @response 200 scenario="Success" {
      *     "code": 200,
@@ -41,19 +39,27 @@ class ProductController extends Controller
      *                 "photo": "https://example.com/photos/product.jpg",
      *                 "photos": ["https://example.com/photos/product-1.jpg", "https://example.com/photos/product-2.jpg"],
      *                 "status": "PUBLISHED",
+     *                 "categories": [
+     *                     {
+     *                         "id": "01953801-efgh-5678-9012-1234567890cd",
+     *                         "store_id": "01953801-abcd-1234-5678-1234567890ab",
+     *                         "parent_id": null,
+     *                         "name": "Electronics",
+     *                         "slug": "electronics",
+     *                         "description": "Electronic gadgets and accessories",
+     *                         "children": [],
+     *                         "products_count": 15,
+     *                         "created_at": "2026-07-21 12:00:00"
+     *                     }
+     *                 ],
      *                 "created_at": "2026-07-21 12:00:00"
      *             }
      *         ],
      *         "pagination": {
-     *             "from": 1,
-     *             "to": 15,
-     *             "total": 45,
-     *             "per_page": 15,
-     *             "first_page": 1,
-     *             "previous_page": null,
      *             "current_page": 1,
-     *             "next_page": 2,
-     *             "last_page": 3
+     *             "last_page": 3,
+     *             "per_page": 15,
+     *             "total": 45
      *         }
      *     }
      * }
@@ -61,32 +67,26 @@ class ProductController extends Controller
      *     "code": 401,
      *     "message": "Unauthorized."
      * }
-     * @response 403 scenario="Forbidden" {
-     *     "code": 403,
-     *     "message": "Store not found or access denied."
-     * }
      * @response 500 scenario="Server Error" {
      *     "code": 500,
      *     "message": "An unexpected error occurred. Please try again later."
      * }
      */
-    public function index(string $storeSlug): JsonResponse
+    public function index(): JsonResponse
     {
-        return $this->productService->getStoreProducts($storeSlug)->toJson();
+        return $this->productService->getStoreProducts()->toJson();
     }
 
     /**
      * Create a new product.
      *
-     * Creates a new product under the specified store. Products default to DRAFT status. Must be assigned to at least one category.
+     * Creates a new product under the authenticated customer store. Products default to DRAFT status.
      *
      * @group Customer Management
      *
      * @subgroup Products
      *
      * @authenticated
-     *
-     * @urlParam storeSlug string required The store slug. Example: my-store
      *
      * @bodyParam name string required The product name. Example: Wireless Headphones
      * @bodyParam description string required Product description. Example: High quality wireless headphones with noise cancellation.
@@ -114,12 +114,14 @@ class ProductController extends Controller
      *             "status": "DRAFT",
      *             "categories": [
      *                 {
-     *                     "id": "01953801-efgh-5678-1234-1234567890cd",
+     *                     "id": "01953801-efgh-5678-9012-1234567890cd",
      *                     "store_id": "01953801-abcd-1234-5678-1234567890ab",
      *                     "parent_id": null,
      *                     "name": "Electronics",
      *                     "slug": "electronics",
      *                     "description": "Electronic gadgets and accessories",
+     *                     "children": [],
+     *                     "products_count": 0,
      *                     "created_at": "2026-07-21 12:00:00"
      *                 }
      *             ],
@@ -131,11 +133,8 @@ class ProductController extends Controller
      *     "code": 401,
      *     "message": "Unauthorized."
      * }
-     * @response 403 scenario="Forbidden" {
-     *     "code": 403,
-     *     "message": "Store not found or access denied."
-     * }
      * @response 422 scenario="Validation Error" {
+     *     "code": 422,
      *     "message": "The given data was invalid.",
      *     "errors": {
      *         "name": ["The name field is required."]
@@ -146,9 +145,9 @@ class ProductController extends Controller
      *     "message": "Failed to create product."
      * }
      */
-    public function store(CreateProductRequest $request, string $storeSlug): JsonResponse
+    public function store(CreateProductRequest $request): JsonResponse
     {
-        return $this->productService->createProduct($storeSlug, $request->validated())->toJson();
+        return $this->productService->createProduct($request->validated())->toJson();
     }
 
     /**
@@ -160,12 +159,10 @@ class ProductController extends Controller
      *
      * @authenticated
      *
-     * @urlParam storeSlug string required The store slug. Example: my-store
      * @urlParam id string required The product UUID. Example: 01953801-ijkl-9012-3456-1234567890ef
      *
      * @response 200 scenario="Success" {
      *     "code": 200,
-     *     "message": null,
      *     "data": {
      *         "product": {
      *             "id": "01953801-ijkl-9012-3456-1234567890ef",
@@ -180,12 +177,14 @@ class ProductController extends Controller
      *             "status": "PUBLISHED",
      *             "categories": [
      *                 {
-     *                     "id": "01953801-efgh-5678-1234-1234567890cd",
+     *                     "id": "01953801-efgh-5678-9012-1234567890cd",
      *                     "store_id": "01953801-abcd-1234-5678-1234567890ab",
      *                     "parent_id": null,
      *                     "name": "Electronics",
      *                     "slug": "electronics",
      *                     "description": "Electronic gadgets and accessories",
+     *                     "children": [],
+     *                     "products_count": 15,
      *                     "created_at": "2026-07-21 12:00:00"
      *                 }
      *             ],
@@ -197,10 +196,6 @@ class ProductController extends Controller
      *     "code": 401,
      *     "message": "Unauthorized."
      * }
-     * @response 403 scenario="Forbidden" {
-     *     "code": 403,
-     *     "message": "Store not found or access denied."
-     * }
      * @response 404 scenario="Not Found" {
      *     "code": 404,
      *     "message": "Product not found."
@@ -210,15 +205,15 @@ class ProductController extends Controller
      *     "message": "An unexpected error occurred. Please try again later."
      * }
      */
-    public function show(string $storeSlug, string $id): JsonResponse
+    public function show(string $id): JsonResponse
     {
-        return $this->productService->getProduct($storeSlug, $id)->toJson();
+        return $this->productService->getProduct($id)->toJson();
     }
 
     /**
      * Update a product.
      *
-     * Updates the specified product. Only the store owner can update products.
+     * Updates the specified product.
      *
      * @group Customer Management
      *
@@ -226,7 +221,6 @@ class ProductController extends Controller
      *
      * @authenticated
      *
-     * @urlParam storeSlug string required The store slug. Example: my-store
      * @urlParam id string required The product UUID. Example: 01953801-abcd-1234-5678-1234567890ab
      *
      * @response 200 scenario="Success" {
@@ -246,12 +240,14 @@ class ProductController extends Controller
      *             "status": "PUBLISHED",
      *             "categories": [
      *                 {
-     *                     "id": "01953801-efgh-5678-1234-1234567890cd",
+     *                     "id": "01953801-efgh-5678-9012-1234567890cd",
      *                     "store_id": "01953801-abcd-1234-5678-1234567890ab",
      *                     "parent_id": null,
      *                     "name": "Electronics",
      *                     "slug": "electronics",
      *                     "description": "Electronic gadgets and accessories",
+     *                     "children": [],
+     *                     "products_count": 15,
      *                     "created_at": "2026-07-21 12:00:00"
      *                 }
      *             ],
@@ -263,10 +259,6 @@ class ProductController extends Controller
      *     "code": 401,
      *     "message": "Unauthorized."
      * }
-     * @response 403 scenario="Forbidden" {
-     *     "code": 403,
-     *     "message": "Store not found or access denied."
-     * }
      * @response 404 scenario="Not Found" {
      *     "code": 404,
      *     "message": "Product not found."
@@ -276,15 +268,15 @@ class ProductController extends Controller
      *     "message": "Failed to update product."
      * }
      */
-    public function update(UpdateProductRequest $request, string $storeSlug, string $id): JsonResponse
+    public function update(UpdateProductRequest $request, string $id): JsonResponse
     {
-        return $this->productService->updateProduct($storeSlug, $id, $request->validated())->toJson();
+        return $this->productService->updateProduct($id, $request->validated())->toJson();
     }
 
     /**
      * Delete a product.
      *
-     * Deletes the specified product. Only the store owner can delete products.
+     * Deletes the specified product.
      *
      * @group Customer Management
      *
@@ -292,7 +284,6 @@ class ProductController extends Controller
      *
      * @authenticated
      *
-     * @urlParam storeSlug string required The store slug. Example: my-store
      * @urlParam id string required The product UUID. Example: 01953801-abcd-1234-5678-1234567890ab
      *
      * @response 200 scenario="Success" {
@@ -303,10 +294,6 @@ class ProductController extends Controller
      *     "code": 401,
      *     "message": "Unauthorized."
      * }
-     * @response 403 scenario="Forbidden" {
-     *     "code": 403,
-     *     "message": "Store not found or access denied."
-     * }
      * @response 404 scenario="Not Found" {
      *     "code": 404,
      *     "message": "Product not found."
@@ -316,8 +303,8 @@ class ProductController extends Controller
      *     "message": "Failed to delete product."
      * }
      */
-    public function destroy(string $storeSlug, string $id): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
-        return $this->productService->deleteProduct($storeSlug, $id)->toJson();
+        return $this->productService->deleteProduct($id)->toJson();
     }
 }

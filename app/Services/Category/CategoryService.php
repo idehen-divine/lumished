@@ -5,73 +5,64 @@ namespace App\Services\Category;
 use L0n3ly\LaravelRepositoryWithService\Contracts\BaseService;
 use L0n3ly\LaravelRepositoryWithService\Services\ServiceApi;
 
-/**
- * Service interface for category management.
- *
- * Defines the contract for category CRUD operations within a store context.
- * Categories are store-scoped and can be organized as a parent-child tree.
- */
 interface CategoryService extends BaseService
 {
     /**
-     * Retrieve all categories for a store (public).
+     * Get the category tree for the authenticated user's store.
      *
-     * @param  string  $storeSlug  The store slug
-     * @return ServiceApi The service API response with a list of categories
+     * @return ServiceApi The service response with the category tree
      */
-    public function getStoreCategories(string $storeSlug): ServiceApi;
+    public function getUserStoreCategories(): ServiceApi;
 
     /**
-     * Retrieve all categories for the authenticated customer's store.
+     * Create a new category under the authenticated user's store.
      *
-     * Returns a tree structure with subcategories nested under their parent.
-     *
-     * @param  string  $storeSlug  The store slug
-     * @return ServiceApi The service API response with a tree of categories
-     */
-    public function getStoreCategoriesForOwner(string $storeSlug): ServiceApi;
-
-    /**
-     * Create a new category under a store.
-     *
-     * Optionally set a parent_id to create a subcategory.
-     *
-     * @param  string  $storeSlug  The store slug
      * @param  array  $data  The category data (name, description, parent_id)
-     * @return ServiceApi The service API response with the created category resource
+     * @return ServiceApi The service response with the created category
      */
-    public function createCategory(string $storeSlug, array $data): ServiceApi;
+    public function createCategory(array $data): ServiceApi;
 
     /**
-     * Retrieve a single category by its UUID.
+     * Get a single category by UUID.
      *
-     * @param  string  $storeSlug  The store slug
      * @param  string  $id  The category UUID
-     * @return ServiceApi The service API response with the category resource
+     * @return ServiceApi The service response with the category
      */
-    public function getCategory(string $storeSlug, string $id): ServiceApi;
+    public function getCategory(string $id): ServiceApi;
 
     /**
-     * Update an existing category.
+     * Update a category.
      *
-     * A category cannot be its own parent, and the parent must belong to the same store.
-     *
-     * @param  string  $storeSlug  The store slug
      * @param  string  $id  The category UUID
-     * @param  array  $data  The category update data
-     * @return ServiceApi The service API response with the updated category resource
+     * @param  array  $data  The category data to update
+     * @return ServiceApi The service response with the updated category
      */
-    public function updateCategory(string $storeSlug, string $id, array $data): ServiceApi;
+    public function updateCategory(string $id, array $data): ServiceApi;
 
     /**
-     * Delete a category and reparent its children.
+     * Delete a category.
      *
      * Child categories are reparented to the deleted category's parent.
-     * Products assigned to this category are unassigned.
      *
-     * @param  string  $storeSlug  The store slug
      * @param  string  $id  The category UUID
-     * @return ServiceApi The service API response indicating deletion success
+     * @return ServiceApi The service response
      */
-    public function deleteCategory(string $storeSlug, string $id): ServiceApi;
+    public function deleteCategory(string $id): ServiceApi;
+
+    /**
+     * Get the category tree for a given store.
+     *
+     * @param  string  $storeId  The store UUID
+     * @return ServiceApi The service response with the category tree
+     */
+    public function getStoreCategories(string $storeId): ServiceApi;
+
+    /**
+     * Get the category tree for public viewing by slug or domain.
+     *
+     * @param  string|null  $slug  The store slug
+     * @param  string|null  $domain  The custom domain
+     * @return ServiceApi The service response with the category tree
+     */
+    public function getStoreCategoriesBySlugOrDomain(?string $slug, ?string $domain): ServiceApi;
 }

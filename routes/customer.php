@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CustomerAuthController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\StoreController;
+use App\Http\Controllers\Api\StoreSettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -24,7 +25,21 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum', 'customer', 'verified'])->group(function () {
 
         /**********************    Store Routes    ***********************/
-        Route::prefix('stores')->name('stores.')->controller(StoreController::class)->group(function () {
+        Route::prefix('store')->name('store.')->group(function () {
+            Route::controller(StoreController::class)->group(function () {
+                Route::get('/', 'show')->name('show');
+                Route::post('/', 'store')->name('store');
+                Route::put('/', 'update')->name('update');
+                Route::delete('/', 'destroy')->name('destroy');
+            });
+
+            Route::prefix('settings')->name('settings.')->controller(StoreSettingsController::class)->group(function () {
+                Route::get('/', 'show')->name('show');
+                Route::put('/', 'update')->name('update');
+            });
+        });
+
+        Route::prefix('products')->name('products.')->controller(ProductController::class)->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/', 'store')->name('store');
             Route::get('/{id}', 'show')->name('show');
@@ -32,22 +47,12 @@ Route::prefix('v1')->group(function () {
             Route::delete('/{id}', 'destroy')->name('destroy');
         });
 
-        Route::prefix('store/{storeSlug}')->name('stores.')->group(function () {
-            Route::prefix('products')->name('products.')->controller(ProductController::class)->group(function () {
-                Route::get('/', 'index')->name('index');
-                Route::post('/', 'store')->name('store');
-                Route::get('/{id}', 'show')->name('show');
-                Route::put('/{id}', 'update')->name('update');
-                Route::delete('/{id}', 'destroy')->name('destroy');
-            });
-
-            Route::prefix('categories')->name('categories.')->controller(CategoryController::class)->group(function () {
-                Route::get('/', 'index')->name('index');
-                Route::post('/', 'store')->name('store');
-                Route::get('/{id}', 'show')->name('show');
-                Route::put('/{id}', 'update')->name('update');
-                Route::delete('/{id}', 'destroy')->name('destroy');
-            });
+        Route::prefix('categories')->name('categories.')->controller(CategoryController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::get('/{id}', 'show')->name('show');
+            Route::put('/{id}', 'update')->name('update');
+            Route::delete('/{id}', 'destroy')->name('destroy');
         });
 
         /**********************    Account Routes    ***********************/
