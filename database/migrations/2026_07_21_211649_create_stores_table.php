@@ -11,9 +11,8 @@ return new class extends Migration
     {
         Schema::create('stores', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade')->unique();
             $table->string('name', 255);
-            $table->string('slug', 255)->unique();
             $table->text('description')->nullable();
             $table->string('tagline', 255)->nullable();
             $table->string('logo_url', 255)->nullable();

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Store extends Model
 {
@@ -21,7 +21,6 @@ class Store extends Model
     protected $fillable = [
         'user_id',
         'name',
-        'slug',
         'description',
         'tagline',
         'logo_url',
@@ -40,23 +39,6 @@ class Store extends Model
         ];
     }
 
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        static::creating(function (Store $store) {
-            $slug = Str::slug($store->name);
-            $originalSlug = $slug;
-            $counter = 1;
-
-            while (static::where('slug', $slug)->exists()) {
-                $slug = $originalSlug.'-'.$counter++;
-            }
-
-            $store->slug = $slug;
-        });
-    }
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -70,6 +52,11 @@ class Store extends Model
     public function categories(): HasMany
     {
         return $this->hasMany(Category::class);
+    }
+
+    public function settings(): HasOne
+    {
+        return $this->hasOne(StoreSettings::class);
     }
 
     public function scopeActive($query)

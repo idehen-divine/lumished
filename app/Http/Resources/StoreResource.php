@@ -12,7 +12,6 @@ class StoreResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'slug' => $this->slug,
             'description' => $this->description,
             'tagline' => $this->tagline,
             'logo_url' => $this->logo_url,
