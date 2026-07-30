@@ -67,14 +67,14 @@ class CreateTest extends TestCase
         ])->assertStatus(ResponseCode::VALIDATION_ERROR->value);
     }
 
-    public function test_product_creation_without_categories_returns_validation_error()
+    public function test_product_creation_without_categories_is_optional()
     {
         Sanctum::actingAs($this->user);
 
         $this->postJson(route('customer.products.store'), [
             'name' => 'No Category',
             'price' => 1000.00,
-        ])->assertStatus(ResponseCode::VALIDATION_ERROR->value);
+        ])->assertStatus(ResponseCode::CREATED->value);
     }
 
     public function test_product_price_cannot_be_negative()

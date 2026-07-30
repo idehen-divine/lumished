@@ -27,7 +27,7 @@ class CreateProductRequest extends FormRequest
             'photos' => ['nullable', 'array', 'max:3'],
             'photos.*' => ['image', 'mimes:jpeg,png,webp', 'max:5120'],
             'status' => ['nullable', 'string', Rule::in($statuses)],
-            'category_ids' => ['required', 'array', 'min:1'],
+            'category_ids' => ['nullable', 'array', 'min:1'],
             'category_ids.*' => ['string', Rule::exists('categories', 'id')],
         ];
     }
@@ -41,7 +41,6 @@ class CreateProductRequest extends FormRequest
             'photo.max' => 'The main photo size cannot exceed 5MB.',
             'photos.max' => 'You can upload up to 3 extra photos.',
             'photos.*.max' => 'Each extra photo size cannot exceed 5MB.',
-            'category_ids.required' => 'At least one category must be assigned.',
             'category_ids.min' => 'At least one category must be assigned.',
         ];
     }
