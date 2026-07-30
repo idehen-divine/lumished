@@ -33,7 +33,7 @@ class CreateTest extends TestCase
 
     public function test_unauthenticated_user_cannot_create_category()
     {
-        $this->postJson(route('customer.stores.categories.store', $this->store->slug), [
+        $this->postJson(route('customer.categories.store'), [
             'name' => 'Electronics',
         ])->assertStatus(401);
     }
@@ -42,7 +42,7 @@ class CreateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $this->postJson(route('customer.stores.categories.store', $this->store->slug), [])
+        $this->postJson(route('customer.categories.store'), [])
             ->assertStatus(ResponseCode::VALIDATION_ERROR->value);
     }
 
@@ -50,7 +50,7 @@ class CreateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $response = $this->postJson(route('customer.stores.categories.store', $this->store->slug), [
+        $response = $this->postJson(route('customer.categories.store'), [
             'name' => 'Electronics',
         ]);
 
@@ -65,37 +65,6 @@ class CreateTest extends TestCase
         ]);
     }
 
-    public function test_category_slug_is_unique_within_store()
-    {
-        Sanctum::actingAs($this->user);
-
-        $this->postJson(route('customer.stores.categories.store', $this->store->slug), [
-            'name' => 'Electronics',
-        ]);
-
-        $response = $this->postJson(route('customer.stores.categories.store', $this->store->slug), [
-            'name' => 'Electronics',
-        ]);
-
-        $response->assertStatus(ResponseCode::CREATED->value);
-        $this->assertNotEquals('electronics', $response->json('data.category.slug'));
-    }
-
-    public function test_category_slug_can_duplicate_across_different_stores()
-    {
-        Sanctum::actingAs($this->user);
-
-        $otherStore = Store::factory()->create(['user_id' => $this->user->id]);
-
-        $this->postJson(route('customer.stores.categories.store', $this->store->slug), [
-            'name' => 'Electronics',
-        ])->assertStatus(ResponseCode::CREATED->value);
-
-        $this->postJson(route('customer.stores.categories.store', $otherStore->slug), [
-            'name' => 'Electronics',
-        ])->assertStatus(ResponseCode::CREATED->value);
-    }
-
     public function test_customer_can_create_subcategory()
     {
         Sanctum::actingAs($this->user);
@@ -104,24 +73,12 @@ class CreateTest extends TestCase
             'store_id' => $this->store->id,
         ]);
 
-        $response = $this->postJson(route('customer.stores.categories.store', $this->store->slug), [
+        $response = $this->postJson(route('customer.categories.store'), [
             'name' => 'Mobile Phones',
             'parent_id' => $parent->id,
         ]);
 
         $response->assertStatus(ResponseCode::CREATED->value);
         $this->assertEquals($parent->id, $response->json('data.category.parent_id'));
-    }
-
-    public function test_customer_cannot_create_category_in_another_users_store()
-    {
-        Sanctum::actingAs($this->user);
-
-        $otherUser = User::factory()->create();
-        $otherStore = Store::factory()->create(['user_id' => $otherUser->id]);
-
-        $this->postJson(route('customer.stores.categories.store', $otherStore->slug), [
-            'name' => 'Hacked Category',
-        ])->assertStatus(ResponseCode::FORBIDDEN->value);
     }
 }

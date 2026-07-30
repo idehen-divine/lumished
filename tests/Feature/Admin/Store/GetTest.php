@@ -97,7 +97,7 @@ class GetTest extends TestCase
         $store = Store::factory()->create(['user_id' => $user->id]);
         Product::factory()->count(2)->create(['store_id' => $store->id]);
 
-        $response = $this->getJson(route('admin.stores.products', $store->slug));
+        $response = $this->getJson(route('admin.stores.products', $store->id));
 
         $response->assertStatus(ResponseCode::SUCCESS->value)
             ->assertJsonStructure([

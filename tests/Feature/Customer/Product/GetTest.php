@@ -48,13 +48,13 @@ class GetTest extends TestCase
 
     public function test_unauthenticated_user_cannot_list_products()
     {
-        $this->getJson(route('customer.stores.products.index', $this->store->slug))
+        $this->getJson(route('customer.products.index'))
             ->assertStatus(401);
     }
 
     public function test_unauthenticated_user_cannot_view_product()
     {
-        $this->getJson(route('customer.stores.products.show', [$this->store->slug, $this->product->id]))
+        $this->getJson(route('customer.products.show', $this->product->id))
             ->assertStatus(401);
     }
 
@@ -65,7 +65,7 @@ class GetTest extends TestCase
         Product::factory()->count(3)->create(['store_id' => $this->store->id])
             ->each(fn ($p) => $p->categories()->attach($this->category->id));
 
-        $response = $this->getJson(route('customer.stores.products.index', $this->store->slug));
+        $response = $this->getJson(route('customer.products.index'));
 
         $response->assertStatus(ResponseCode::SUCCESS->value)
             ->assertJsonStructure([
@@ -77,19 +77,8 @@ class GetTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $this->getJson(route('customer.stores.products.show', [$this->store->slug, $this->product->id]))
+        $this->getJson(route('customer.products.show', $this->product->id))
             ->assertStatus(ResponseCode::SUCCESS->value)
             ->assertJsonPath('data.product.name', 'Viewable Product');
-    }
-
-    public function test_customer_cannot_list_products_for_another_users_store()
-    {
-        Sanctum::actingAs($this->user);
-
-        $otherUser = User::factory()->create();
-        $otherStore = Store::factory()->create(['user_id' => $otherUser->id]);
-
-        $this->getJson(route('customer.stores.products.index', $otherStore->slug))
-            ->assertStatus(ResponseCode::FORBIDDEN->value);
     }
 }

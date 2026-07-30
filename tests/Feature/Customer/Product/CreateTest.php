@@ -40,7 +40,7 @@ class CreateTest extends TestCase
 
     public function test_unauthenticated_user_cannot_create_product()
     {
-        $this->postJson(route('customer.stores.products.store', $this->store->slug), [
+        $this->postJson(route('customer.products.store'), [
             'name' => 'Test Product',
             'price' => 2500.00,
             'category_ids' => [$this->category->id],
@@ -51,7 +51,7 @@ class CreateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $this->postJson(route('customer.stores.products.store', $this->store->slug), [
+        $this->postJson(route('customer.products.store'), [
             'price' => 1000.00,
             'category_ids' => [$this->category->id],
         ])->assertStatus(ResponseCode::VALIDATION_ERROR->value);
@@ -61,7 +61,7 @@ class CreateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $this->postJson(route('customer.stores.products.store', $this->store->slug), [
+        $this->postJson(route('customer.products.store'), [
             'name' => 'No Price',
             'category_ids' => [$this->category->id],
         ])->assertStatus(ResponseCode::VALIDATION_ERROR->value);
@@ -71,7 +71,7 @@ class CreateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $this->postJson(route('customer.stores.products.store', $this->store->slug), [
+        $this->postJson(route('customer.products.store'), [
             'name' => 'No Category',
             'price' => 1000.00,
         ])->assertStatus(ResponseCode::VALIDATION_ERROR->value);
@@ -81,7 +81,7 @@ class CreateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $this->postJson(route('customer.stores.products.store', $this->store->slug), [
+        $this->postJson(route('customer.products.store'), [
             'name' => 'Negative Price',
             'price' => -100,
             'category_ids' => [$this->category->id],
@@ -92,7 +92,7 @@ class CreateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $response = $this->postJson(route('customer.stores.products.store', $this->store->slug), [
+        $response = $this->postJson(route('customer.products.store'), [
             'name' => 'Test Product',
             'price' => 2500.00,
             'category_ids' => [$this->category->id],
@@ -114,7 +114,7 @@ class CreateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $response = $this->postJson(route('customer.stores.products.store', $this->store->slug), [
+        $response = $this->postJson(route('customer.products.store'), [
             'name' => 'Draft Product',
             'price' => 1000.00,
             'category_ids' => [$this->category->id],
@@ -128,7 +128,7 @@ class CreateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $response = $this->postJson(route('customer.stores.products.store', $this->store->slug), [
+        $response = $this->postJson(route('customer.products.store'), [
             'name' => 'Free Product',
             'price' => 0,
             'category_ids' => [$this->category->id],
@@ -142,7 +142,7 @@ class CreateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $response = $this->postJson(route('customer.stores.products.store', $this->store->slug), [
+        $response = $this->postJson(route('customer.products.store'), [
             'name' => 'Full Product',
             'description' => 'A detailed product description',
             'price' => 5000.00,
@@ -157,20 +157,6 @@ class CreateTest extends TestCase
         $this->assertEquals(ProductStatusEnum::PUBLISHED->name, $response->json('data.product.status'));
     }
 
-    public function test_customer_cannot_create_product_in_another_users_store()
-    {
-        Sanctum::actingAs($this->user);
-
-        $otherUser = User::factory()->create();
-        $otherStore = Store::factory()->create(['user_id' => $otherUser->id]);
-
-        $this->postJson(route('customer.stores.products.store', $otherStore->slug), [
-            'name' => 'Hacked Product',
-            'price' => 100.00,
-            'category_ids' => [$this->category->id],
-        ])->assertStatus(ResponseCode::FORBIDDEN->value);
-    }
-
     public function test_product_can_have_multiple_categories()
     {
         Sanctum::actingAs($this->user);
@@ -179,7 +165,7 @@ class CreateTest extends TestCase
             'store_id' => $this->store->id,
         ]);
 
-        $response = $this->postJson(route('customer.stores.products.store', $this->store->slug), [
+        $response = $this->postJson(route('customer.products.store'), [
             'name' => 'Multi Category Product',
             'price' => 3000.00,
             'category_ids' => [$this->category->id, $category2->id],

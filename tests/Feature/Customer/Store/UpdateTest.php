@@ -33,31 +33,16 @@ class UpdateTest extends TestCase
 
     public function test_unauthenticated_user_cannot_update_store()
     {
-        $this->putJson(route('customer.stores.update', $this->store->id), [
+        $this->putJson(route('customer.store.update'), [
             'name' => 'Hacked Name',
         ])->assertStatus(401);
-    }
-
-    public function test_customer_cannot_update_another_users_store()
-    {
-        Sanctum::actingAs($this->user);
-
-        $otherUser = User::factory()->create();
-        $otherStore = Store::factory()->create([
-            'user_id' => $otherUser->id,
-            'name' => 'Other Store',
-        ]);
-
-        $this->putJson(route('customer.stores.update', $otherStore->id), [
-            'name' => 'Hacked Name',
-        ])->assertStatus(ResponseCode::NOT_FOUND->value);
     }
 
     public function test_customer_can_update_own_store()
     {
         Sanctum::actingAs($this->user);
 
-        $response = $this->putJson(route('customer.stores.update', $this->store->id), [
+        $response = $this->putJson(route('customer.store.update'), [
             'name' => 'Updated Name',
             'description' => 'Updated description',
         ]);
@@ -75,7 +60,7 @@ class UpdateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $response = $this->putJson(route('customer.stores.update', $this->store->id), [
+        $response = $this->putJson(route('customer.store.update'), [
             'whatsapp_number' => '+2348099999999',
         ]);
 
@@ -87,7 +72,7 @@ class UpdateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $this->putJson(route('customer.stores.update', $this->store->id), [
+        $this->putJson(route('customer.store.update'), [
             'name' => str_repeat('a', 256),
         ])->assertStatus(ResponseCode::VALIDATION_ERROR->value);
     }

@@ -34,26 +34,15 @@ class DeleteTest extends TestCase
 
     public function test_unauthenticated_user_cannot_delete_store()
     {
-        $this->deleteJson(route('customer.stores.destroy', $this->store->id))
+        $this->deleteJson(route('customer.store.destroy'))
             ->assertStatus(401);
-    }
-
-    public function test_customer_cannot_delete_another_users_store()
-    {
-        Sanctum::actingAs($this->user);
-
-        $otherUser = User::factory()->create();
-        $otherStore = Store::factory()->create(['user_id' => $otherUser->id]);
-
-        $this->deleteJson(route('customer.stores.destroy', $otherStore->id))
-            ->assertStatus(ResponseCode::NOT_FOUND->value);
     }
 
     public function test_customer_can_delete_own_store()
     {
         Sanctum::actingAs($this->user);
 
-        $this->deleteJson(route('customer.stores.destroy', $this->store->id))
+        $this->deleteJson(route('customer.store.destroy'))
             ->assertStatus(ResponseCode::SUCCESS->value)
             ->assertJson(['message' => 'Store deleted successfully.']);
 
@@ -68,7 +57,7 @@ class DeleteTest extends TestCase
         $product = Product::factory()->create(['store_id' => $this->store->id]);
         $product->categories()->attach($category->id);
 
-        $this->deleteJson(route('customer.stores.destroy', $this->store->id));
+        $this->deleteJson(route('customer.store.destroy'));
 
         $this->assertDatabaseMissing('stores', ['id' => $this->store->id]);
         $this->assertDatabaseMissing('products', ['id' => $product->id]);

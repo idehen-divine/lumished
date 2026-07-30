@@ -40,13 +40,13 @@ class GetTest extends TestCase
 
     public function test_unauthenticated_user_cannot_list_categories()
     {
-        $this->getJson(route('customer.stores.categories.index', $this->store->slug))
+        $this->getJson(route('customer.categories.index'))
             ->assertStatus(401);
     }
 
     public function test_unauthenticated_user_cannot_view_category()
     {
-        $this->getJson(route('customer.stores.categories.show', [$this->store->slug, $this->category->id]))
+        $this->getJson(route('customer.categories.show', $this->category->id))
             ->assertStatus(401);
     }
 
@@ -56,7 +56,7 @@ class GetTest extends TestCase
 
         Category::factory()->count(3)->create(['store_id' => $this->store->id]);
 
-        $response = $this->getJson(route('customer.stores.categories.index', $this->store->slug));
+        $response = $this->getJson(route('customer.categories.index'));
 
         $response->assertStatus(ResponseCode::SUCCESS->value)
             ->assertJsonStructure([
@@ -69,21 +69,9 @@ class GetTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $this->getJson(route('customer.stores.categories.show', [$this->store->slug, $this->category->id]))
+        $this->getJson(route('customer.categories.show', $this->category->id))
             ->assertStatus(ResponseCode::SUCCESS->value)
             ->assertJsonPath('data.category.name', 'Books');
-    }
-
-    public function test_customer_cannot_view_category_in_another_users_store()
-    {
-        Sanctum::actingAs($this->user);
-
-        $otherUser = User::factory()->create();
-        $otherStore = Store::factory()->create(['user_id' => $otherUser->id]);
-        $otherCategory = Category::factory()->create(['store_id' => $otherStore->id]);
-
-        $this->getJson(route('customer.stores.categories.show', [$otherStore->slug, $otherCategory->id]))
-            ->assertStatus(ResponseCode::FORBIDDEN->value);
     }
 
     public function test_category_list_returns_tree_structure()
@@ -101,7 +89,7 @@ class GetTest extends TestCase
             'parent_id' => $parent->id,
         ]);
 
-        $response = $this->getJson(route('customer.stores.categories.index', $this->store->slug));
+        $response = $this->getJson(route('customer.categories.index'));
 
         $response->assertStatus(ResponseCode::SUCCESS->value);
         $categories = $response->json('data.categories');

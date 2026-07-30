@@ -26,7 +26,7 @@ class CreateTest extends TestCase
 
     public function test_unauthenticated_user_cannot_create_store()
     {
-        $this->postJson(route('customer.stores.store'), [
+        $this->postJson(route('customer.store.store'), [
             'name' => 'My Store',
             'whatsapp_number' => '+2348012345678',
         ])->assertStatus(401);
@@ -36,7 +36,7 @@ class CreateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $this->postJson(route('customer.stores.store'), [
+        $this->postJson(route('customer.store.store'), [
             'whatsapp_number' => '+2348012345678',
         ])->assertStatus(ResponseCode::VALIDATION_ERROR->value);
     }
@@ -45,7 +45,7 @@ class CreateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $this->postJson(route('customer.stores.store'), [
+        $this->postJson(route('customer.store.store'), [
             'name' => 'No WhatsApp Store',
         ])->assertStatus(ResponseCode::VALIDATION_ERROR->value);
     }
@@ -54,7 +54,7 @@ class CreateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $response = $this->postJson(route('customer.stores.store'), [
+        $response = $this->postJson(route('customer.store.store'), [
             'name' => 'My Test Store',
             'whatsapp_number' => '+2348012345678',
         ]);
@@ -65,7 +65,7 @@ class CreateTest extends TestCase
                 'message' => 'Store created successfully.',
             ])
             ->assertJsonStructure([
-                'data' => ['store' => ['id', 'name', 'slug', 'status', 'whatsapp_number']],
+                'data' => ['store' => ['id', 'name', 'status', 'whatsapp_number']],
             ]);
 
         $this->assertDatabaseHas('stores', [
@@ -75,42 +75,27 @@ class CreateTest extends TestCase
         ]);
     }
 
-    public function test_store_slug_is_auto_generated_from_name()
+    public function test_customer_cannot_create_second_store()
     {
         Sanctum::actingAs($this->user);
 
-        $response = $this->postJson(route('customer.stores.store'), [
-            'name' => 'My Awesome Store',
+        $this->postJson(route('customer.store.store'), [
+            'name' => 'First Store',
             'whatsapp_number' => '+2348012345678',
-        ]);
+        ])->assertStatus(ResponseCode::CREATED->value);
 
-        $response->assertStatus(ResponseCode::CREATED->value);
-        $this->assertEquals('my-awesome-store', $response->json('data.store.slug'));
-    }
-
-    public function test_store_slug_is_unique_when_duplicate_name_exists()
-    {
-        Sanctum::actingAs($this->user);
-
-        $this->postJson(route('customer.stores.store'), [
-            'name' => 'My Store',
-            'whatsapp_number' => '+2348012345678',
-        ]);
-
-        $response = $this->postJson(route('customer.stores.store'), [
-            'name' => 'My Store',
+        $this->postJson(route('customer.store.store'), [
+            'name' => 'Second Store',
             'whatsapp_number' => '+2348098765432',
-        ]);
-
-        $response->assertStatus(ResponseCode::CREATED->value);
-        $this->assertNotEquals('my-store', $response->json('data.store.slug'));
+        ])->assertStatus(ResponseCode::VALIDATION_ERROR->value)
+            ->assertJson(['message' => 'You already have a store. Only one store per account is allowed.']);
     }
 
     public function test_store_defaults_to_active_status()
     {
         Sanctum::actingAs($this->user);
 
-        $response = $this->postJson(route('customer.stores.store'), [
+        $response = $this->postJson(route('customer.store.store'), [
             'name' => 'Active Store',
             'whatsapp_number' => '+2348012345678',
         ]);
@@ -123,7 +108,7 @@ class CreateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $response = $this->postJson(route('customer.stores.store'), [
+        $response = $this->postJson(route('customer.store.store'), [
             'name' => 'Full Store',
             'description' => 'A store with all fields',
             'tagline' => 'Best store ever',

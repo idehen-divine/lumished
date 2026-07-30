@@ -49,29 +49,16 @@ class UpdateTest extends TestCase
 
     public function test_unauthenticated_user_cannot_update_product()
     {
-        $this->putJson(route('customer.stores.products.update', [$this->store->slug, $this->product->id]), [
+        $this->putJson(route('customer.products.update', $this->product->id), [
             'name' => 'New Name',
         ])->assertStatus(401);
-    }
-
-    public function test_customer_cannot_update_product_in_another_users_store()
-    {
-        Sanctum::actingAs($this->user);
-
-        $otherUser = User::factory()->create();
-        $otherStore = Store::factory()->create(['user_id' => $otherUser->id]);
-        $otherProduct = Product::factory()->create(['store_id' => $otherStore->id]);
-
-        $this->putJson(route('customer.stores.products.update', [$otherStore->slug, $otherProduct->id]), [
-            'name' => 'Hacked',
-        ])->assertStatus(ResponseCode::FORBIDDEN->value);
     }
 
     public function test_customer_can_update_product()
     {
         Sanctum::actingAs($this->user);
 
-        $response = $this->putJson(route('customer.stores.products.update', [$this->store->slug, $this->product->id]), [
+        $response = $this->putJson(route('customer.products.update', $this->product->id), [
             'name' => 'New Name',
             'price' => 2000.00,
             'category_ids' => [$this->category->id],

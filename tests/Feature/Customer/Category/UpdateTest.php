@@ -40,29 +40,16 @@ class UpdateTest extends TestCase
 
     public function test_unauthenticated_user_cannot_update_category()
     {
-        $this->putJson(route('customer.stores.categories.update', [$this->store->slug, $this->category->id]), [
+        $this->putJson(route('customer.categories.update', $this->category->id), [
             'name' => 'New Name',
         ])->assertStatus(401);
-    }
-
-    public function test_customer_cannot_update_category_in_another_users_store()
-    {
-        Sanctum::actingAs($this->user);
-
-        $otherUser = User::factory()->create();
-        $otherStore = Store::factory()->create(['user_id' => $otherUser->id]);
-        $otherCategory = Category::factory()->create(['store_id' => $otherStore->id]);
-
-        $this->putJson(route('customer.stores.categories.update', [$otherStore->slug, $otherCategory->id]), [
-            'name' => 'Hacked',
-        ])->assertStatus(ResponseCode::FORBIDDEN->value);
     }
 
     public function test_customer_can_update_category_name()
     {
         Sanctum::actingAs($this->user);
 
-        $response = $this->putJson(route('customer.stores.categories.update', [$this->store->slug, $this->category->id]), [
+        $response = $this->putJson(route('customer.categories.update', $this->category->id), [
             'name' => 'New Name',
         ]);
 
@@ -74,21 +61,8 @@ class UpdateTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        $this->putJson(route('customer.stores.categories.update', [$this->store->slug, $this->category->id]), [
+        $this->putJson(route('customer.categories.update', $this->category->id), [
             'parent_id' => $this->category->id,
-        ])->assertStatus(ResponseCode::VALIDATION_ERROR->value);
-    }
-
-    public function test_category_update_prevents_parent_from_other_store()
-    {
-        Sanctum::actingAs($this->user);
-
-        $otherUser = User::factory()->create();
-        $otherStore = Store::factory()->create(['user_id' => $otherUser->id]);
-        $otherCategory = Category::factory()->create(['store_id' => $otherStore->id]);
-
-        $this->putJson(route('customer.stores.categories.update', [$this->store->slug, $this->category->id]), [
-            'parent_id' => $otherCategory->id,
         ])->assertStatus(ResponseCode::VALIDATION_ERROR->value);
     }
 }

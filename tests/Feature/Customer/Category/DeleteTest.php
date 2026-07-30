@@ -40,27 +40,15 @@ class DeleteTest extends TestCase
 
     public function test_unauthenticated_user_cannot_delete_category()
     {
-        $this->deleteJson(route('customer.stores.categories.destroy', [$this->store->slug, $this->category->id]))
+        $this->deleteJson(route('customer.categories.destroy', $this->category->id))
             ->assertStatus(401);
-    }
-
-    public function test_customer_cannot_delete_category_in_another_users_store()
-    {
-        Sanctum::actingAs($this->user);
-
-        $otherUser = User::factory()->create();
-        $otherStore = Store::factory()->create(['user_id' => $otherUser->id]);
-        $otherCategory = Category::factory()->create(['store_id' => $otherStore->id]);
-
-        $this->deleteJson(route('customer.stores.categories.destroy', [$otherStore->slug, $otherCategory->id]))
-            ->assertStatus(ResponseCode::FORBIDDEN->value);
     }
 
     public function test_customer_can_delete_category()
     {
         Sanctum::actingAs($this->user);
 
-        $this->deleteJson(route('customer.stores.categories.destroy', [$this->store->slug, $this->category->id]))
+        $this->deleteJson(route('customer.categories.destroy', $this->category->id))
             ->assertStatus(ResponseCode::SUCCESS->value);
 
         $this->assertDatabaseMissing('categories', ['id' => $this->category->id]);
@@ -75,7 +63,7 @@ class DeleteTest extends TestCase
             'parent_id' => $this->category->id,
         ]);
 
-        $this->deleteJson(route('customer.stores.categories.destroy', [$this->store->slug, $this->category->id]));
+        $this->deleteJson(route('customer.categories.destroy', $this->category->id));
 
         $child->refresh();
         $this->assertNull($child->parent_id);
@@ -88,7 +76,7 @@ class DeleteTest extends TestCase
         $product = Product::factory()->create(['store_id' => $this->store->id]);
         $product->categories()->attach($this->category->id);
 
-        $this->deleteJson(route('customer.stores.categories.destroy', [$this->store->slug, $this->category->id]));
+        $this->deleteJson(route('customer.categories.destroy', $this->category->id));
 
         $this->assertDatabaseMissing('category_product', [
             'category_id' => $this->category->id,

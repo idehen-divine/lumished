@@ -1,7 +1,7 @@
 # 0003. Admin management API
 
 **Date**: 2026-07-22
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 
