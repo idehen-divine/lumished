@@ -104,4 +104,36 @@ class GetTest extends TestCase
                 'data' => ['products', 'pagination'],
             ]);
     }
+
+    public function test_admin_can_search_stores()
+    {
+        Sanctum::actingAs($this->admin);
+
+        $user = User::factory()->create();
+        Store::factory()->create(['user_id' => $user->id, 'name' => 'Lagos Emporium']);
+        Store::factory()->create(['user_id' => $user->id, 'name' => 'Abuja Boutique']);
+
+        $response = $this->getJson(route('admin.stores.index', ['search' => 'Emporium']));
+
+        $response->assertStatus(ResponseCode::SUCCESS->value);
+        $names = collect($response->json('data.stores'))->pluck('name');
+        $this->assertContains('Lagos Emporium', $names);
+        $this->assertNotContains('Abuja Boutique', $names);
+    }
+
+    public function test_admin_can_filter_stores_by_status()
+    {
+        Sanctum::actingAs($this->admin);
+
+        $user = User::factory()->create();
+        Store::factory()->create(['user_id' => $user->id, 'status' => StoreStatusEnum::ACTIVE->name]);
+        Store::factory()->create(['user_id' => $user->id, 'status' => StoreStatusEnum::INACTIVE->name]);
+
+        $response = $this->getJson(route('admin.stores.index', ['status' => 'active']));
+
+        $response->assertStatus(ResponseCode::SUCCESS->value);
+        $statuses = collect($response->json('data.stores'))->pluck('status');
+        $this->assertNotEmpty($statuses);
+        $this->assertTrue($statuses->every(fn ($status) => $status === StoreStatusEnum::ACTIVE->name));
+    }
 }

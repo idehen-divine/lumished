@@ -121,6 +121,42 @@ class StoreGetTest extends TestCase
             ->assertStatus(ResponseCode::NOT_FOUND->value);
     }
 
+    public function test_public_can_search_published_products()
+    {
+        $user = User::factory()->create();
+        $store = Store::factory()->create([
+            'user_id' => $user->id,
+            'status' => StoreStatusEnum::ACTIVE->name,
+        ]);
+        StoreSettings::factory()->create([
+            'store_id' => $store->id,
+            'slug' => Str::slug($store->name),
+        ]);
+
+        $category = Category::factory()->create(['store_id' => $store->id]);
+
+        $matching = Product::factory()->create([
+            'store_id' => $store->id,
+            'status' => 'PUBLISHED',
+            'name' => 'Signature Sneakers',
+        ]);
+        $matching->categories()->attach($category->id);
+
+        $other = Product::factory()->create([
+            'store_id' => $store->id,
+            'status' => 'PUBLISHED',
+            'name' => 'Plain T-Shirt',
+        ]);
+        $other->categories()->attach($category->id);
+
+        $response = $this->getJson(route('public.store.products', ['slug' => Str::slug($store->name), 'search' => 'Sneakers']));
+
+        $response->assertStatus(ResponseCode::SUCCESS->value);
+        $names = collect($response->json('data.products'))->pluck('name');
+        $this->assertContains('Signature Sneakers', $names);
+        $this->assertNotContains('Plain T-Shirt', $names);
+    }
+
     public function test_public_can_view_categories_for_active_store()
     {
         $user = User::factory()->create();
