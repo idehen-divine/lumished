@@ -41,7 +41,7 @@ class QueryableHelper extends Helper
      * and sorted pagination based on request input.
      *
      * @param  Model|EloquentBuilder|QueryBuilder  $model  The starting model or query builder instance
-     * @param  array  $options  Configuration options (status_column, featured_column, exact_filters, searchable, sortable, sort_map, etc.)
+     * @param  array  $options  Configuration options (status_column, status_map, featured_column, exact_filters, searchable, sortable, sort_map, etc.)
      * @param  callable|null  $extraQuery  Optional callback for additional query constraints
      * @return LengthAwarePaginator The paginated result set
      *
@@ -59,7 +59,10 @@ class QueryableHelper extends Helper
         if (isset($options['status_column'])) {
             $statusColumn = (string) $options['status_column'];
             if (request()->filled('status') && $this->hasColumn($query, $statusColumn)) {
-                $query->where($statusColumn, request('status') === 'active');
+                $statusKey = request('status') === 'active' ? 'active' : 'inactive';
+                $statusValue = $options['status_map'][$statusKey] ?? (request('status') === 'active');
+
+                $query->where($statusColumn, $statusValue);
             }
         }
 
@@ -85,7 +88,7 @@ class QueryableHelper extends Helper
             $filtered = $allResults->filter(function (Model $record) use ($search, $searchable): bool {
                 foreach ($searchable as $column) {
                     $value = (string) ($record->{$column} ?? '');
-                    if (helpers()->stringSearch()->matchesWithFuzzyPrefix($search, $value)) {
+                    if (stringSearch()->matchesWithFuzzyPrefix($search, $value)) {
                         return true;
                     }
                 }
