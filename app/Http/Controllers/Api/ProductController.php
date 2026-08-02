@@ -85,6 +85,39 @@ class ProductController extends Controller
     }
 
     /**
+     * Delete all products for the store.
+     *
+     * Deletes all products belonging to the authenticated customer's store, including their images.
+     *
+     * @group Customer Management
+     *
+     * @subgroup Products
+     *
+     * @authenticated
+     *
+     * @response 200 scenario="Success" {
+     *     "code": 200,
+     *     "message": "Store products deleted successfully."
+     * }
+     * @response 401 scenario="Unauthorized" {
+     *     "code": 401,
+     *     "message": "Unauthorized."
+     * }
+     * @response 404 scenario="No Store" {
+     *     "code": 404,
+     *     "message": "You do not have a store yet."
+     * }
+     * @response 500 scenario="Server Error" {
+     *     "code": 500,
+     *     "message": "Failed to delete store products."
+     * }
+     */
+    public function deleteAll(): JsonResponse
+    {
+        return $this->productService->deleteUserStoreProducts()->toJson();
+    }
+
+    /**
      * Create a new product.
      *
      * Creates a new product under the authenticated customer store. Products default to DRAFT status.

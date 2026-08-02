@@ -29,6 +29,7 @@ Route::prefix('v1')->group(function () {
 
         Route::prefix('stores/{store}')->name('stores.')->controller(AdminStoreController::class)->group(function () {
             Route::get('/products', 'products')->name('products');
+            Route::delete('/products', 'deleteProducts')->name('products.delete');
         });
     });
 

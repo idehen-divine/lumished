@@ -365,4 +365,17 @@ class ProductServiceImplement extends ServiceApi implements ProductService
             return $this->logAndRespond($e, 'Failed to delete store products.');
         }
     }
+
+    /** {@inheritDoc} */
+    public function deleteUserStoreProducts(): ServiceApi
+    {
+        $store = $this->getUserStore();
+
+        if (! $store) {
+            return $this->setCode(ResponseCode::NOT_FOUND->value)
+                ->setMessage('You do not have a store yet.');
+        }
+
+        return $this->deleteStoreProducts($store->id);
+    }
 }

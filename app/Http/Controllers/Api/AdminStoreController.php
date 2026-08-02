@@ -275,4 +275,39 @@ class AdminStoreController extends Controller
     {
         return $this->productService->getAdminStoreProducts($store->id)->toJson();
     }
+
+    /**
+     * Delete all products in a store.
+     *
+     * Deletes all products belonging to the specified store, including their images.
+     *
+     * @group Admin Management
+     *
+     * @subgroup Store Management
+     *
+     * @authenticated
+     *
+     * @urlParam store string required The store UUID. Example: 01953801-abcd-1234-5678-1234567890ab
+     *
+     * @response 200 scenario="Success" {
+     *     "code": 200,
+     *     "message": "Store products deleted successfully."
+     * }
+     * @response 401 scenario="Unauthorized" {
+     *     "code": 401,
+     *     "message": "Unauthorized."
+     * }
+     * @response 404 scenario="Not Found" {
+     *     "code": 404,
+     *     "message": "Store not found."
+     * }
+     * @response 500 scenario="Server Error" {
+     *     "code": 500,
+     *     "message": "Failed to delete store products."
+     * }
+     */
+    public function deleteProducts(Store $store): JsonResponse
+    {
+        return $this->productService->deleteStoreProducts($store->id)->toJson();
+    }
 }

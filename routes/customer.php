@@ -41,6 +41,7 @@ Route::prefix('v1')->group(function () {
 
         Route::prefix('products')->name('products.')->controller(ProductController::class)->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::delete('/', 'deleteAll')->name('deleteAll');
             Route::post('/', 'store')->name('store');
             Route::get('/{id}', 'show')->name('show');
             Route::put('/{id}', 'update')->name('update');

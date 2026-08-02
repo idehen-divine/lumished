@@ -79,4 +79,11 @@ interface ProductService extends BaseService
      * @return ServiceApi The service response
      */
     public function deleteStoreProducts(string $storeId): ServiceApi;
+
+    /**
+     * Delete all products belonging to the authenticated user's store.
+     *
+     * @return ServiceApi The service response
+     */
+    public function deleteUserStoreProducts(): ServiceApi;
 }
