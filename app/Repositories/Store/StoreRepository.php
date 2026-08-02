@@ -24,7 +24,7 @@ interface StoreRepository extends Repository
     public function getAllForAdmin(): LengthAwarePaginator;
 
     /**
-     * Find an active store by its StoreSettings slug or domain.
+     * Find an active store by its slug or domain.
      *
      * @param  string|null  $slug  The store slug
      * @param  string|null  $domain  The custom domain

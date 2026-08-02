@@ -4,7 +4,6 @@ namespace App\Services\Store;
 
 use App\Enums\ResponseCode;
 use App\Enums\StoreStatusEnum;
-use App\Http\Resources\PublicStoreResource;
 use App\Http\Resources\StoreResource;
 use App\Repositories\Store\StoreRepository;
 use App\Traits\LogAndRespond;
@@ -159,7 +158,7 @@ class StoreServiceImplement extends ServiceApi implements StoreService
             }
 
             return $this->setCode(ResponseCode::SUCCESS->value)
-                ->setData(['store' => new PublicStoreResource($store)]);
+                ->setData(['store' => new StoreResource($store)]);
         } catch (\Throwable $e) {
             return $this->logAndRespond($e);
         }

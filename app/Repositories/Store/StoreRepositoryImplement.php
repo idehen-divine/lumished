@@ -41,11 +41,11 @@ class StoreRepositoryImplement extends Eloquent implements StoreRepository
         $query = $this->model->active();
 
         if ($domain) {
-            return $query->whereHas('settings', fn ($q) => $q->where('domain', $domain))->first();
+            return $query->where('domain', $domain)->first();
         }
 
         if ($slug) {
-            return $query->whereHas('settings', fn ($q) => $q->where('slug', $slug))->first();
+            return $query->where('slug', $slug)->first();
         }
 
         return null;

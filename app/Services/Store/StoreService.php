@@ -48,7 +48,7 @@ interface StoreService extends BaseService
     /**
      * Get a store for public viewing by slug or domain.
      *
-     * Looks up the store using its StoreSettings slug or custom domain.
+     * Looks up the store using its slug or custom domain.
      *
      * @param  string|null  $slug  The store slug
      * @param  string|null  $domain  The custom domain

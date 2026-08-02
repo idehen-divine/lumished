@@ -21,6 +21,11 @@ return new class extends Migration
             $table->string('email', 255)->nullable();
             $table->text('address')->nullable();
             $table->string('whatsapp_number', 50);
+            $table->string('domain', 255)->nullable();
+            $table->string('slug', 255)->nullable()->unique();
+            $table->string('product_layout', 50)->default('default');
+            $table->string('brand_color', 50)->default('#111111');
+            $table->string('background_color', 50)->default('#FFFFFF');
             $table->enum('status', array_column(StoreStatusEnum::cases(), 'name'))->default(StoreStatusEnum::ACTIVE->name);
             $table->timestamps();
         });

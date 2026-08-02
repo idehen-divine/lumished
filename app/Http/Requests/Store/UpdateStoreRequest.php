@@ -23,6 +23,11 @@ class UpdateStoreRequest extends FormRequest
             'email' => ['nullable', 'string', 'email', 'max:255'],
             'address' => ['nullable', 'string'],
             'whatsapp_number' => ['nullable', 'string', 'max:50'],
+            'domain' => ['nullable', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255'],
+            'product_layout' => ['nullable', 'string', 'max:50'],
+            'brand_color' => ['nullable', 'string', 'max:50'],
+            'background_color' => ['nullable', 'string', 'max:50'],
         ];
     }
 

@@ -21,7 +21,7 @@ class ProductResource extends JsonResource
             'photos' => $this->photos,
             'status' => $this->status?->name,
             'categories' => CategoryResource::collection($this->whenLoaded('categories')),
-            'store' => new PublicStoreResource($this->whenLoaded('store')),
+            'store' => new StoreResource($this->whenLoaded('store')),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
         ];
     }
