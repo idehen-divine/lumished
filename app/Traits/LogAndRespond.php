@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Enums\ResponseCode;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 trait LogAndRespond
 {
@@ -18,6 +19,14 @@ trait LogAndRespond
             'method' => request()->method(),
             'input' => request()->except(['password', 'password_confirmation', 'token']),
         ]);
+
+        if ($exception instanceof ValidationException) {
+            $this->setCode(ResponseCode::VALIDATION_ERROR->value)
+                ->setMessage('The given data was invalid.')
+                ->setError($exception->errors());
+
+            return $this;
+        }
 
         $this->setCode($code)
             ->setMessage($message);
