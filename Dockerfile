@@ -4,30 +4,46 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     libpng-dev \
+    libjpeg-dev \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
     libicu-dev \
     libwebp-dev \
+    libmagickwand-dev \
+    libheif-dev \
+    libavif-dev \
     zip \
     unzip \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN docker-php-ext-configure gd --with-webp \
     && docker-php-ext-install \
     pdo_mysql \
     mbstring \
     exif \
     pcntl \
     bcmath \
-    gd \
     zip \
     xml \
     opcache \
-    intl
+    intl \
+    && curl -sSL https://codeload.github.com/Imagick/imagick/tar.gz/refs/tags/3.8.0 | tar -xz -C /tmp \
+    && cd /tmp/imagick-3.8.0 \
+    && phpize \
+    && ./configure \
+    && make -j"$(nproc)" \
+    && make install \
+    && docker-php-ext-enable imagick \
+    && rm -rf /tmp/imagick-3.8.0 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pecl install redis && docker-php-ext-enable redis
+RUN curl -sSL https://codeload.github.com/phpredis/phpredis/tar.gz/refs/tags/6.1.0 | tar -xz -C /tmp \
+    && cd /tmp/phpredis-6.1.0 \
+    && phpize \
+    && ./configure \
+    && make -j"$(nproc)" \
+    && make install \
+    && docker-php-ext-enable redis \
+    && rm -rf /tmp/phpredis-6.1.0
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
