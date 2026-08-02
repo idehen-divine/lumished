@@ -42,6 +42,7 @@ export AWS_SECRET_ACCESS_KEY="minioadmin"
 export AWS_DEFAULT_REGION="us-east-1"
 export AWS_BUCKET="shelfie-local"
 export AWS_ENDPOINT="http://shelfie-minio:9000"
+export AWS_USE_PATH_STYLE_ENDPOINT="true"
 export MINIO_ROOT_USER="minioadmin"
 export MINIO_ROOT_PASSWORD="minioadmin"
 

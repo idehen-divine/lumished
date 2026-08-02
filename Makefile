@@ -16,4 +16,16 @@ artisan:
 	docker exec -i $(APP_CONTAINER) php artisan $(cmd)
 
 deploy:
-	. ./devops/scripts/deploy.local.env.sh && ./devops/scripts/deploy.sh
+	. ./devops/scripts/deploy.local.env.sh && ./devops/scripts/deploy.sh fresh
+
+deploy\:fresh:
+	. ./devops/scripts/deploy.local.env.sh && ./devops/scripts/deploy.sh fresh
+
+deploy\:start:
+	. ./devops/scripts/deploy.local.env.sh && ./devops/scripts/deploy.sh start
+
+deploy\:stop:
+	. ./devops/scripts/deploy.local.env.sh && ./devops/scripts/deploy.sh stop
+
+deploy\:restart:
+	. ./devops/scripts/deploy.local.env.sh && ./devops/scripts/deploy.sh restart

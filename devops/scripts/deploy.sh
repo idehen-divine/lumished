@@ -3,6 +3,13 @@
 set -e
 
 #===============================================================================
+#  Usage: deploy.sh [fresh|start|stop|restart]   (default: fresh)
+#
+#  fresh    – full deploy: system prep, image rebuild, DB wipe + reseed, docs
+#  start    – bring the stack up with existing image and data (no reinstall)
+#  stop     – stop the application stack (shared infra stays up)
+#  restart  – stop then start
+#
 #  All variables are passed as environment variables from the CI pipeline.
 #
 #  APP_NAME, APP_ENV, APP_KEY, APP_DEBUG, APP_URL
@@ -127,6 +134,7 @@ validate_env() {
         DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD DB_ROOT_PASSWORD \
         REDIS_HOST REDIS_PORT REDIS_DB REDIS_CACHE_DB \
         AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_BUCKET AWS_ENDPOINT \
+        AWS_USE_PATH_STYLE_ENDPOINT \
         MINIO_ROOT_USER MINIO_ROOT_PASSWORD \
         PAYSTACK_SECRET SQUAD_API_KEY; do
         if [ -z "${!var}" ]; then
@@ -201,6 +209,7 @@ setup_env_file() {
         -e "s|^AWS_DEFAULT_REGION=.*|AWS_DEFAULT_REGION=$(e "$AWS_DEFAULT_REGION")|" \
         -e "s|^AWS_BUCKET=.*|AWS_BUCKET=$(e "$AWS_BUCKET")|" \
         -e "s|^AWS_ENDPOINT=.*|AWS_ENDPOINT=$(e "$AWS_ENDPOINT")|" \
+        -e "s|^AWS_USE_PATH_STYLE_ENDPOINT=.*|AWS_USE_PATH_STYLE_ENDPOINT=$(e "$AWS_USE_PATH_STYLE_ENDPOINT")|" \
         -e "s|^AWS_URL=.*|AWS_URL=$(e "$AWS_URL")|" \
         -e "s|^PAYSTACK_SECRET=.*|PAYSTACK_SECRET=$(e "$PAYSTACK_SECRET")|" \
         -e "s|^SQUAD_API_KEY=.*|SQUAD_API_KEY=$(e "$SQUAD_API_KEY")|" \
@@ -210,23 +219,10 @@ setup_env_file() {
 }
 
 
-# Brings up shared infrastructure (MySQL, Redis, MinIO, Caddy), builds the
-# application image from the project Dockerfile, then starts the environment
-# stack (app, queue, scheduler, websocket). Order matters — shared services
-# must be running before the app containers attempt to connect to them.
-start_containers() {
-    echo "🛑 Stopping existing environment stack..."
-    docker compose down --remove-orphans || true
-    echo "✅ Old containers stopped"
-
-    echo "🔗 Ensuring shared services are running..."
-    $SHARED_COMPOSE up -d --remove-orphans --force-recreate
-    echo "✅ Shared services running"
-
-    echo "📦 Building Docker image..."
-    docker compose build app
-    echo "✅ Image built"
-
+# Writes the docker-compose.override.yml used only in local dev to mount the
+# working directory into the containers. Generated fresh on every start so no
+# stale overrides survive between runs.
+setup_local_override() {
     if [ "$APP_ENV" = "local" ]; then
         echo "🔧 Local env detected — generating volume mount override..."
         cat > "$DEPLOY_DIR/docker-compose.override.yml" <<EOF
@@ -248,14 +244,43 @@ services:
       - ./storage/logs:/var/www/html/storage/logs
 EOF
     fi
+}
+
+remove_local_override() {
+    if [ "$APP_ENV" = "local" ] && [ -f "$DEPLOY_DIR/docker-compose.override.yml" ]; then
+        rm "$DEPLOY_DIR/docker-compose.override.yml"
+    fi
+}
+
+
+# Brings up shared infrastructure (MySQL, Redis, MinIO, Caddy), optionally
+# builds the application image, then starts the environment stack (app, queue,
+# scheduler, websocket). Pass "build" to force an image rebuild — plain starts
+# only pull up whatever image already exists, so not every deploy reinstalls.
+start_containers() {
+    echo "🛑 Stopping existing environment stack..."
+    docker compose down --remove-orphans || true
+    echo "✅ Old containers stopped"
+
+    echo "🔗 Ensuring shared services are running..."
+    $SHARED_COMPOSE up -d --remove-orphans --force-recreate
+    echo "✅ Shared services running"
+
+    if [ "$1" = "build" ]; then
+        echo "📦 Building Docker image..."
+        docker compose build app
+        echo "✅ Image built"
+    else
+        echo "⏭️ Skipping image build (use deploy:fresh to rebuild)"
+    fi
+
+    setup_local_override
 
     echo "🚀 Starting environment stack..."
     docker compose up -d --remove-orphans
     echo "✅ Containers started"
 
-    if [ "$APP_ENV" = "local" ] && [ -f "$DEPLOY_DIR/docker-compose.override.yml" ]; then
-        rm "$DEPLOY_DIR/docker-compose.override.yml"
-    fi
+    remove_local_override
 }
 
 
@@ -337,6 +362,14 @@ run_database_migrations() {
     fi
 }
 
+# Runs only incremental migrations for non-destructive starts. Never wipes
+# or reseeds the database the way deploy:fresh does.
+run_incremental_migrations() {
+    echo "🗄️ Running incremental migrations (non-destructive)..."
+    $APP_EXEC php artisan migrate --force
+    echo "✅ Migrations completed"
+}
+
 
 # Clears all cached config, routes, and views then re-caches them so the
 # running containers serve fresh configuration after every deploy.
@@ -363,8 +396,8 @@ setup_storage() {
 # when the default exec user is non-root.
 fix_permissions() {
     echo "🔧 Fixing storage permissions..."
-    docker compose exec -T -u root app chmod -R 775 storage bootstrap/cache
-    docker compose exec -T -u root app chown -R www-data:www-data storage bootstrap/cache
+    docker compose exec -T -u root app chmod -R 775 storage bootstrap/cache public
+    docker compose exec -T -u root app chown -R www-data:www-data storage bootstrap/cache public
 
     # Fix host-side log directory ownership so the volume mount is writable by www-data (uid 33)
     if [ -d "${DATA_DIR}/logs" ]; then
@@ -487,29 +520,91 @@ clear_application_logs() {
 
 
 #===============================================================================
+#                           DEPLOYMENT PHASES
+#===============================================================================
+
+# Full deploy: system prep, image rebuild, database wipe + reseed, docs,
+# logging rotation. This is the only path that reinstalls everything.
+deploy_fresh() {
+    system_upgrade
+    setup_docker
+    validate_env
+    check_ports
+    verify_compose_file
+    setup_env_file
+    start_containers build
+    setup_minio_bucket
+    wait_for_database
+    setup_application_database
+    verify_database_connection
+    run_database_migrations
+    optimize_laravel
+    setup_storage
+    fix_permissions
+    generate_api_docs
+    clear_application_logs
+    reload_caddy
+    verify_deployment
+    cleanup
+}
+
+# Brings the stack up with the existing image and data. No rebuild, no DB wipe.
+deploy_start() {
+    validate_env
+    verify_compose_file
+    setup_env_file
+    check_ports
+    start_containers
+    setup_minio_bucket
+    wait_for_database
+    setup_application_database
+    verify_database_connection
+    run_incremental_migrations
+    optimize_laravel
+    setup_storage
+    fix_permissions
+    generate_api_docs
+    reload_caddy
+    verify_deployment
+}
+
+# Stops the application stack. Shared infrastructure (MySQL, Redis, MinIO,
+# Caddy) is left running so subsequent starts are fast and lossless.
+deploy_stop() {
+    echo "🛑 Stopping application stack..."
+    docker compose down --remove-orphans || true
+    echo "✅ Application stack stopped"
+}
+
+deploy_restart() {
+    deploy_stop
+    deploy_start
+}
+
+
+#===============================================================================
 #                           MAIN EXECUTION
 #===============================================================================
 
-system_upgrade
-setup_docker
-validate_env
-check_ports
-verify_compose_file
-setup_env_file
-start_containers
-setup_minio_bucket
-wait_for_database
+COMMAND="${1:-fresh}"
 
-setup_application_database
-verify_database_connection
-run_database_migrations
-optimize_laravel
-setup_storage
-fix_permissions
-generate_api_docs
-clear_application_logs
-reload_caddy
-verify_deployment
-cleanup
+case "$COMMAND" in
+    start)
+        deploy_start
+        ;;
+    stop)
+        deploy_stop
+        ;;
+    restart)
+        deploy_restart
+        ;;
+    fresh)
+        deploy_fresh
+        ;;
+    *)
+        echo "ℹ️  Unknown command '$COMMAND' — defaulting to fresh"
+        deploy_fresh
+        ;;
+esac
 
 echo "🎉 Deployment successful!"
