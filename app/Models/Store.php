@@ -3,16 +3,16 @@
 namespace App\Models;
 
 use App\Enums\StoreStatusEnum;
+use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Store extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasSlug, HasUuids;
 
     protected $keyType = 'string';
 
@@ -29,7 +29,18 @@ class Store extends Model
         'email',
         'address',
         'whatsapp_number',
+        'domain',
+        'slug',
+        'product_layout',
+        'brand_color',
+        'background_color',
         'status',
+    ];
+
+    protected $attributes = [
+        'product_layout' => 'default',
+        'brand_color' => '#111111',
+        'background_color' => '#FFFFFF',
     ];
 
     public function casts(): array
@@ -52,11 +63,6 @@ class Store extends Model
     public function categories(): HasMany
     {
         return $this->hasMany(Category::class);
-    }
-
-    public function settings(): HasOne
-    {
-        return $this->hasOne(StoreSettings::class);
     }
 
     public function scopeActive($query)

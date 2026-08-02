@@ -2,17 +2,17 @@
 
 namespace App\Models;
 
+use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 
 class Category extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasSlug, HasUuids;
 
     protected $keyType = 'string';
 
@@ -26,21 +26,9 @@ class Category extends Model
         'description',
     ];
 
-    protected static function boot(): void
+    protected function slugScope(): ?string
     {
-        parent::boot();
-
-        static::creating(function (Category $category) {
-            $slug = Str::slug($category->name);
-            $originalSlug = $slug;
-            $counter = 1;
-
-            while (static::where('store_id', $category->store_id)->where('slug', $slug)->exists()) {
-                $slug = $originalSlug.'-'.$counter++;
-            }
-
-            $category->slug = $slug;
-        });
+        return 'store_id';
     }
 
     public function store(): BelongsTo
