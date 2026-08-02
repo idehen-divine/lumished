@@ -86,14 +86,9 @@ class QueryableHelper extends Helper
 
             $allResults = $query->get();
             $filtered = $allResults->filter(function (Model $record) use ($search, $searchable): bool {
-                foreach ($searchable as $column) {
-                    $value = (string) ($record->{$column} ?? '');
-                    if (stringSearch()->matchesWithFuzzyPrefix($search, $value)) {
-                        return true;
-                    }
-                }
+                $fields = array_map(fn (string $column): string => (string) ($record->{$column} ?? ''), $searchable);
 
-                return false;
+                return stringHelper()->matchesWithFuzzyPrefix($search, 0.75, ...$fields);
             });
 
             $query = $model instanceof Model ? $model->newQuery() : clone $model;
