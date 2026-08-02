@@ -7,7 +7,6 @@ use App\Enums\StoreStatusEnum;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Store;
-use App\Models\StoreSettings;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -31,10 +30,6 @@ class StoreGetTest extends TestCase
             'name' => 'Public Store',
             'status' => StoreStatusEnum::ACTIVE->name,
         ]);
-        StoreSettings::factory()->create([
-            'store_id' => $store->id,
-            'slug' => Str::slug($store->name),
-        ]);
 
         $this->getJson(route('public.store.show', ['slug' => Str::slug($store->name)]))
             ->assertStatus(ResponseCode::SUCCESS->value)
@@ -49,10 +44,6 @@ class StoreGetTest extends TestCase
             'name' => 'Inactive Store',
             'status' => StoreStatusEnum::INACTIVE->name,
         ]);
-        StoreSettings::factory()->create([
-            'store_id' => $store->id,
-            'slug' => Str::slug($store->name),
-        ]);
 
         $this->getJson(route('public.store.show', ['slug' => Str::slug($store->name)]))
             ->assertStatus(ResponseCode::NOT_FOUND->value);
@@ -66,10 +57,6 @@ class StoreGetTest extends TestCase
             'name' => 'Suspended Store',
             'status' => StoreStatusEnum::SUSPENDED->name,
         ]);
-        StoreSettings::factory()->create([
-            'store_id' => $store->id,
-            'slug' => Str::slug($store->name),
-        ]);
 
         $this->getJson(route('public.store.show', ['slug' => Str::slug($store->name)]))
             ->assertStatus(ResponseCode::NOT_FOUND->value);
@@ -81,10 +68,6 @@ class StoreGetTest extends TestCase
         $store = Store::factory()->create([
             'user_id' => $user->id,
             'status' => StoreStatusEnum::ACTIVE->name,
-        ]);
-        StoreSettings::factory()->create([
-            'store_id' => $store->id,
-            'slug' => Str::slug($store->name),
         ]);
 
         $category = Category::factory()->create(['store_id' => $store->id]);
@@ -128,10 +111,6 @@ class StoreGetTest extends TestCase
             'user_id' => $user->id,
             'status' => StoreStatusEnum::ACTIVE->name,
         ]);
-        StoreSettings::factory()->create([
-            'store_id' => $store->id,
-            'slug' => Str::slug($store->name),
-        ]);
 
         $category = Category::factory()->create(['store_id' => $store->id]);
 
@@ -163,10 +142,6 @@ class StoreGetTest extends TestCase
         $store = Store::factory()->create([
             'user_id' => $user->id,
             'status' => StoreStatusEnum::ACTIVE->name,
-        ]);
-        StoreSettings::factory()->create([
-            'store_id' => $store->id,
-            'slug' => Str::slug($store->name),
         ]);
 
         Category::factory()->count(2)->create(['store_id' => $store->id]);

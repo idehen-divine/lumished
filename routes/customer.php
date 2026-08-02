@@ -4,7 +4,6 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CustomerAuthController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\StoreController;
-use App\Http\Controllers\Api\StoreSettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -31,11 +30,6 @@ Route::prefix('v1')->group(function () {
                 Route::post('/', 'store')->name('store');
                 Route::put('/', 'update')->name('update');
                 Route::delete('/', 'destroy')->name('destroy');
-            });
-
-            Route::prefix('settings')->name('settings.')->controller(StoreSettingsController::class)->group(function () {
-                Route::get('/', 'show')->name('show');
-                Route::put('/', 'update')->name('update');
             });
         });
 

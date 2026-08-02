@@ -112,7 +112,7 @@ class CreateTest extends TestCase
             'name' => 'Full Store',
             'description' => 'A store with all fields',
             'tagline' => 'Best store ever',
-            'currency' => 'NGN',
+            'currency' => 'USD',
             'phone' => '+2348012345678',
             'email' => 'store@example.com',
             'address' => '123 Test Street',
