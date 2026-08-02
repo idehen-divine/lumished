@@ -31,6 +31,18 @@ class GetTest extends TestCase
         $this->getJson(route('admin.stores.index'))->assertStatus(401);
     }
 
+    public function test_unverified_admin_is_blocked_from_protected_routes()
+    {
+        $unverified = User::factory()->unverified()->create();
+        $unverified->setRole('ADMIN');
+
+        Sanctum::actingAs($unverified);
+
+        $this->getJson(route('admin.stores.index'))
+            ->assertStatus(ResponseCode::PRECONDITION_REQUIRED->value)
+            ->assertJson(['message' => 'Your email address is not verified.']);
+    }
+
     public function test_non_admin_cannot_list_stores()
     {
         Sanctum::actingAs($this->admin);

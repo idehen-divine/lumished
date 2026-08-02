@@ -4,6 +4,7 @@ namespace Tests\Feature\Customer\Auth;
 
 use App\Enums\OTPTypeEnum;
 use App\Enums\ResponseCode;
+use App\Models\Store;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -49,6 +50,26 @@ class EmailTest extends TestCase
             ->assertJson(['message' => 'Email verified successfully.']);
 
         $this->assertTrue($this->user->fresh()->hasVerifiedEmail());
+    }
+
+    public function test_unverified_user_is_blocked_from_protected_routes(): void
+    {
+        $this->assertFalse($this->user->hasVerifiedEmail());
+
+        $this->withToken($this->token)
+            ->getJson(route('customer.products.index'))
+            ->assertStatus(ResponseCode::PRECONDITION_REQUIRED->value)
+            ->assertJson(['message' => 'Your email address is not verified.']);
+    }
+
+    public function test_verified_user_can_access_protected_routes(): void
+    {
+        $this->user->markEmailAsVerified();
+        Store::factory()->create(['user_id' => $this->user->id]);
+
+        $this->withToken($this->token)
+            ->getJson(route('customer.products.index'))
+            ->assertStatus(ResponseCode::SUCCESS->value);
     }
 
     public function test_verify_email_with_invalid_otp_returns_error(): void
