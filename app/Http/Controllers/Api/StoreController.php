@@ -269,6 +269,11 @@ class StoreController extends Controller
      *
      * @queryParam slug string The store slug. Example: my-store
      * @queryParam domain string The store domain. Example: mystore.com
+     * @queryParam page int The page number. Example: 1
+     * @queryParam per_page int Items per page (max 100). Example: 10
+     * @queryParam search string Search products by name or description. Example: headphones
+     * @queryParam sort_by string Sort by any product column. Example: created_at
+     * @queryParam sort_order string Sort direction: asc or desc. Example: desc
      *
      * @response 200 scenario=Success {
      *     "code": 200,
@@ -301,7 +306,7 @@ class StoreController extends Controller
      *         "pagination": {
      *             "current_page": 1,
      *             "last_page": 1,
-     *             "per_page": 15,
+     *             "per_page": 10,
      *             "total": 1
      *         }
      *     }

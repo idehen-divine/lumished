@@ -23,6 +23,13 @@ class ProductController extends Controller
      *
      * @authenticated
      *
+     * @queryParam page int The page number. Example: 1
+     * @queryParam per_page int Items per page (max 100). Example: 10
+     * @queryParam search string Search products by name or description. Example: headphones
+     * @queryParam status string Filter by status: active (PUBLISHED) or inactive (DRAFT). Example: active
+     * @queryParam sort_by string Sort by any product column. Example: created_at
+     * @queryParam sort_order string Sort direction: asc or desc. Example: desc
+     *
      * @response 200 scenario="Success" {
      *     "code": 200,
      *     "message": "Products retrieved successfully.",
@@ -57,8 +64,8 @@ class ProductController extends Controller
      *         ],
      *         "pagination": {
      *             "current_page": 1,
-     *             "last_page": 3,
-     *             "per_page": 15,
+     *             "last_page": 5,
+     *             "per_page": 10,
      *             "total": 45
      *         }
      *     }
