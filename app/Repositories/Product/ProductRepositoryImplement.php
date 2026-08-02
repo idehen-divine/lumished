@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Product;
 
+use App\Enums\ProductStatusEnum;
 use App\Models\Product;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use L0n3ly\LaravelRepositoryWithService\Implementations\Eloquent;
@@ -18,7 +19,14 @@ class ProductRepositoryImplement extends Eloquent implements ProductRepository
     {
         $query = $this->model->ownedByStore($storeId)->with('categories');
 
-        return helpers()->queryableHelper()->fetchWithFilters($query);
+        return queryableHelper()->fetchWithFilters($query, [
+            'status_column' => 'status',
+            'status_map' => [
+                'active' => ProductStatusEnum::PUBLISHED->name,
+                'inactive' => ProductStatusEnum::DRAFT->name,
+            ],
+            'searchable' => ['name', 'description'],
+        ]);
     }
 
     /** {@inheritDoc} */
@@ -26,13 +34,14 @@ class ProductRepositoryImplement extends Eloquent implements ProductRepository
     {
         $query = $this->model->published()->ownedByStore($storeId)->with('categories');
 
-        return helpers()->queryableHelper()->fetchWithFilters($query);
-    }
-
-    /** {@inheritDoc} */
-    public function findPublished(string $id): ?Product
-    {
-        return $this->model->published()->with('store')->find($id);
+        return queryableHelper()->fetchWithFilters($query, [
+            'status_column' => 'status',
+            'status_map' => [
+                'active' => ProductStatusEnum::PUBLISHED->name,
+                'inactive' => ProductStatusEnum::DRAFT->name,
+            ],
+            'searchable' => ['name', 'description'],
+        ]);
     }
 
     /** {@inheritDoc} */

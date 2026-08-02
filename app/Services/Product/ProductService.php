@@ -65,18 +65,18 @@ interface ProductService extends BaseService
     public function getPublishedProductsBySlugOrDomain(?string $slug, ?string $domain): ServiceApi;
 
     /**
-     * Show a single published product.
-     *
-     * @param  string  $id  The product UUID
-     * @return ServiceApi The service response with the published product
-     */
-    public function showPublished(string $id): ServiceApi;
-
-    /**
      * Get all products in a store for admin.
      *
      * @param  string  $storeId  The store UUID
      * @return ServiceApi The service response with paginated products
      */
     public function getAdminStoreProducts(string $storeId): ServiceApi;
+
+    /**
+     * Delete all products belonging to a store.
+     *
+     * @param  string  $storeId  The store UUID
+     * @return ServiceApi The service response
+     */
+    public function deleteStoreProducts(string $storeId): ServiceApi;
 }

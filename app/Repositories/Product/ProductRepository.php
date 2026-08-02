@@ -25,14 +25,6 @@ interface ProductRepository extends Repository
     public function getPublishedProducts(string $storeId): LengthAwarePaginator;
 
     /**
-     * Find a published product by ID.
-     *
-     * @param  string  $id  The product UUID
-     * @return Product|null The published product or null if not found
-     */
-    public function findPublished(string $id): ?Product;
-
-    /**
      * Find a product owned by a specific store.
      *
      * @param  string  $id  The product UUID

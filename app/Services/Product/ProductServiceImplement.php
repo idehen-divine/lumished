@@ -43,7 +43,7 @@ class ProductServiceImplement extends ServiceApi implements ProductService
                 ->setMessage('Products retrieved successfully.')
                 ->setData([
                     'products' => ProductResource::collection($products),
-                    'pagination' => helpers()->queryableHelper()->getPagination($products),
+                    'pagination' => queryableHelper()->getPagination($products),
                 ]);
         } catch (\Throwable $e) {
             return $this->logAndRespond($e);
@@ -300,7 +300,7 @@ class ProductServiceImplement extends ServiceApi implements ProductService
                 ->setMessage('Products retrieved successfully.')
                 ->setData([
                     'products' => ProductResource::collection($products),
-                    'pagination' => helpers()->queryableHelper()->getPagination($products),
+                    'pagination' => queryableHelper()->getPagination($products),
                 ]);
         } catch (\Throwable $e) {
             return $this->logAndRespond($e);
@@ -325,24 +325,6 @@ class ProductServiceImplement extends ServiceApi implements ProductService
     }
 
     /** {@inheritDoc} */
-    public function showPublished(string $id): ServiceApi
-    {
-        try {
-            $product = $this->productRepository->findPublished($id);
-
-            if (! $product) {
-                return $this->setCode(ResponseCode::NOT_FOUND->value)
-                    ->setMessage('Product not found.');
-            }
-
-            return $this->setCode(ResponseCode::SUCCESS->value)
-                ->setData(['product' => new ProductResource($product)]);
-        } catch (\Throwable $e) {
-            return $this->logAndRespond($e);
-        }
-    }
-
-    /** {@inheritDoc} */
     public function getAdminStoreProducts(string $storeId): ServiceApi
     {
         try {
@@ -352,10 +334,35 @@ class ProductServiceImplement extends ServiceApi implements ProductService
                 ->setMessage('Products retrieved successfully.')
                 ->setData([
                     'products' => ProductResource::collection($products),
-                    'pagination' => helpers()->queryableHelper()->getPagination($products),
+                    'pagination' => queryableHelper()->getPagination($products),
                 ]);
         } catch (\Throwable $e) {
             return $this->logAndRespond($e);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public function deleteStoreProducts(string $storeId): ServiceApi
+    {
+        try {
+            $products = $this->productRepository->query()->where('store_id', $storeId)->get(['id', 'photo', 'photos']);
+
+            foreach ($products as $product) {
+                if ($product->photo) {
+                    imageHelper()->deleteImage($product->photo);
+                }
+
+                foreach ($product->photos ?? [] as $photo) {
+                    imageHelper()->deleteImage($photo);
+                }
+            }
+
+            $this->productRepository->deleteByStore($storeId);
+
+            return $this->setCode(ResponseCode::SUCCESS->value)
+                ->setMessage('Store products deleted successfully.');
+        } catch (\Throwable $e) {
+            return $this->logAndRespond($e, 'Failed to delete store products.');
         }
     }
 }
