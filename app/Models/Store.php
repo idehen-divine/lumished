@@ -63,9 +63,4 @@ class Store extends Model
     {
         return $query->where('status', StoreStatusEnum::ACTIVE->name);
     }
-
-    public function scopeOwnedBy($query, string $userId)
-    {
-        return $query->where('user_id', $userId);
-    }
 }

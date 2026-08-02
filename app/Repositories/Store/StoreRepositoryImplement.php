@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Store;
 
+use App\Enums\StoreStatusEnum;
 use App\Models\Store;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use L0n3ly\LaravelRepositoryWithService\Implementations\Eloquent;
@@ -20,25 +21,18 @@ class StoreRepositoryImplement extends Eloquent implements StoreRepository
     }
 
     /** {@inheritDoc} */
-    public function getAllActive(): LengthAwarePaginator
-    {
-        $query = $this->model->active()->withCount('products');
-
-        return helpers()->queryableHelper()->fetchWithFilters($query);
-    }
-
-    /** {@inheritDoc} */
     public function getAllForAdmin(): LengthAwarePaginator
     {
         $query = $this->model->query()->withCount('products');
 
-        return helpers()->queryableHelper()->fetchWithFilters($query);
-    }
-
-    /** {@inheritDoc} */
-    public function findActive(string $id): ?Store
-    {
-        return $this->model->active()->where('id', $id)->first();
+        return queryableHelper()->fetchWithFilters($query, [
+            'status_column' => 'status',
+            'status_map' => [
+                'active' => StoreStatusEnum::ACTIVE->name,
+                'inactive' => StoreStatusEnum::INACTIVE->name,
+            ],
+            'searchable' => ['name', 'description', 'tagline'],
+        ]);
     }
 
     /** {@inheritDoc} */

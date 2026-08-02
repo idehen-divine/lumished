@@ -17,26 +17,11 @@ interface StoreRepository extends Repository
     public function getStoreForUser(string $userId): ?Store;
 
     /**
-     * Get all active stores with pagination.
-     *
-     * @return LengthAwarePaginator Paginated list of active stores
-     */
-    public function getAllActive(): LengthAwarePaginator;
-
-    /**
      * Get all stores for admin listing with pagination.
      *
      * @return LengthAwarePaginator Paginated list of all stores
      */
     public function getAllForAdmin(): LengthAwarePaginator;
-
-    /**
-     * Find an active store by ID.
-     *
-     * @param  string  $id  The store UUID
-     * @return Store|null The active store or null if not found
-     */
-    public function findActive(string $id): ?Store;
 
     /**
      * Find an active store by its StoreSettings slug or domain.

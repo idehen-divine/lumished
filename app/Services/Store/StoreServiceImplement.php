@@ -148,41 +148,6 @@ class StoreServiceImplement extends ServiceApi implements StoreService
     }
 
     /** {@inheritDoc} */
-    public function getAllActive(): ServiceApi
-    {
-        try {
-            $stores = $this->storeRepository->getAllActive();
-
-            return $this->setCode(ResponseCode::SUCCESS->value)
-                ->setMessage('Stores retrieved successfully.')
-                ->setData([
-                    'stores' => PublicStoreResource::collection($stores),
-                    'pagination' => helpers()->queryableHelper()->getPagination($stores),
-                ]);
-        } catch (\Throwable $e) {
-            return $this->logAndRespond($e);
-        }
-    }
-
-    /** {@inheritDoc} */
-    public function showForPublic(string $id): ServiceApi
-    {
-        try {
-            $store = $this->storeRepository->findActive($id);
-
-            if (! $store) {
-                return $this->setCode(ResponseCode::NOT_FOUND->value)
-                    ->setMessage('Store not found.');
-            }
-
-            return $this->setCode(ResponseCode::SUCCESS->value)
-                ->setData(['store' => new PublicStoreResource($store)]);
-        } catch (\Throwable $e) {
-            return $this->logAndRespond($e);
-        }
-    }
-
-    /** {@inheritDoc} */
     public function showForPublicBySlugOrDomain(?string $slug, ?string $domain): ServiceApi
     {
         try {
@@ -210,7 +175,7 @@ class StoreServiceImplement extends ServiceApi implements StoreService
                 ->setMessage('Stores retrieved successfully.')
                 ->setData([
                     'stores' => StoreResource::collection($stores),
-                    'pagination' => helpers()->queryableHelper()->getPagination($stores),
+                    'pagination' => queryableHelper()->getPagination($stores),
                 ]);
         } catch (\Throwable $e) {
             return $this->logAndRespond($e);

@@ -38,27 +38,12 @@ interface StoreService extends BaseService
     public function deleteStore(): ServiceApi;
 
     /**
-     * Get all active stores for public listing.
-     *
-     * @return ServiceApi The service response with paginated active stores
-     */
-    public function getAllActive(): ServiceApi;
-
-    /**
      * Get a store's full details for admin review.
      *
      * @param  string  $id  The store UUID
      * @return ServiceApi The service response with the store details
      */
     public function showForAdmin(string $id): ServiceApi;
-
-    /**
-     * Get a store for public viewing by ID.
-     *
-     * @param  string  $id  The store UUID
-     * @return ServiceApi The service response with the public store data
-     */
-    public function showForPublic(string $id): ServiceApi;
 
     /**
      * Get a store for public viewing by slug or domain.
