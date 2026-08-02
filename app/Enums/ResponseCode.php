@@ -12,6 +12,7 @@ enum ResponseCode: int
     case FORBIDDEN = 403;
     case NOT_FOUND = 404;
     case VALIDATION_ERROR = 422;
+    case PRECONDITION_REQUIRED = 428;
     case SERVER_ERROR = 500;
 
     public function defaultMessage(): string
@@ -24,6 +25,7 @@ enum ResponseCode: int
             self::FORBIDDEN => 'Forbidden: You do not have access to this resource.',
             self::NOT_FOUND => 'Resource not found.',
             self::VALIDATION_ERROR => 'Validation failed.',
+            self::PRECONDITION_REQUIRED => 'Precondition required.',
             self::SERVER_ERROR => 'Internal server error.',
         };
     }
