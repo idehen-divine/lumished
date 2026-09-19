@@ -1,4 +1,5 @@
 deploy.local.sh
+secrets
 *.log
 .DS_Store
 .env
