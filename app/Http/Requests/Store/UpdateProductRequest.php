@@ -20,8 +20,8 @@ class UpdateProductRequest extends FormRequest
         return [
             'name' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'price' => ['nullable', 'numeric', 'min:0'],
-            'compare_at_price' => ['nullable', 'numeric', 'min:0'],
+            'price' => ['nullable', 'numeric', 'min:0', 'max:184467440737095516.15'],
+            'compare_at_price' => ['nullable', 'numeric', 'min:0', 'max:184467440737095516.15'],
             'stock_quantity' => ['nullable', 'integer', 'min:0'],
             'photo' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:5120'],
             'photos' => ['nullable', 'array', 'max:3'],
@@ -36,6 +36,8 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'price.min' => 'The product price must be 0 or a positive number.',
+            'price.max' => 'The product price is too large.',
+            'compare_at_price.max' => 'The compare at price is too large.',
             'photo.max' => 'The main photo size cannot exceed 5MB.',
             'photos.max' => 'You can upload up to 3 extra photos.',
             'photos.*.max' => 'Each extra photo size cannot exceed 5MB.',
