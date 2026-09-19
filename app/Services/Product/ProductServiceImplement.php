@@ -63,6 +63,12 @@ class ProductServiceImplement extends ServiceApi implements ProductService
 
             $data['store_id'] = $store->id;
             $data['status'] ??= ProductStatusEnum::DRAFT->name;
+            $data['price'] = moneyHelper()->toMinor($data['price']);
+
+            if (array_key_exists('compare_at_price', $data)) {
+                $data['compare_at_price'] = moneyHelper()->toMinor($data['compare_at_price']);
+            }
+
 
             $categoryIds = $data['category_ids'] ?? [];
             unset($data['category_ids']);
@@ -178,6 +184,14 @@ class ProductServiceImplement extends ServiceApi implements ProductService
 
             $categoryIds = $data['category_ids'] ?? null;
             unset($data['category_ids']);
+
+            if (array_key_exists('price', $data)) {
+                $data['price'] = moneyHelper()->toMinor($data['price']);
+            }
+
+            if (array_key_exists('compare_at_price', $data)) {
+                $data['compare_at_price'] = moneyHelper()->toMinor($data['compare_at_price']);
+            }
 
             $photoPath = null;
             $extraPhotos = null;
