@@ -736,7 +736,7 @@ health() {
         fi
     done
 
-    # Shared services — find by compose label, not hardcoded name (handles florishmax vs lumished typo + any project)
+    # Shared services — find by compose label, not hardcoded name
     # For S3 prod (AWS_USE_PATH_STYLE_ENDPOINT != true && AWS_ENDPOINT empty), minio is not required
     local services_to_check=("mysql" "redis")
     if [[ "${AWS_USE_PATH_STYLE_ENDPOINT:-}" == "true" || -n "${AWS_ENDPOINT:-}" ]]; then
