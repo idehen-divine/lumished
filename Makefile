@@ -1,4 +1,4 @@
-APP_CONTAINER = local-app
+APP_CONTAINER = lumished-local-app-1
 
 TEST_ENV = -e APP_ENV=testing -e DB_CONNECTION=sqlite -e DB_DATABASE=database/testing.sqlite
 
@@ -16,16 +16,19 @@ artisan:
 	docker exec -i $(APP_CONTAINER) php artisan $(cmd)
 
 deploy:
-	. ./devops/scripts/deploy.local.env.sh && ./devops/scripts/deploy.sh fresh
+	set -a; source ./deploy.local.sh; set +a; ./deploy.sh deploy
 
 deploy\:fresh:
-	. ./devops/scripts/deploy.local.env.sh && ./devops/scripts/deploy.sh fresh
+	set -a; source ./deploy.local.sh; set +a; ./deploy.sh deploy
 
 deploy\:start:
-	. ./devops/scripts/deploy.local.env.sh && ./devops/scripts/deploy.sh start
+	set -a; source ./deploy.local.sh; set +a; ./deploy.sh start
 
 deploy\:stop:
-	. ./devops/scripts/deploy.local.env.sh && ./devops/scripts/deploy.sh stop
+	set -a; source ./deploy.local.sh; set +a; ./deploy.sh stop
 
 deploy\:restart:
-	. ./devops/scripts/deploy.local.env.sh && ./devops/scripts/deploy.sh restart
+	set -a; source ./deploy.local.sh; set +a; ./deploy.sh restart
+
+deploy\:health:
+	set -a; source ./deploy.local.sh; set +a; ./deploy.sh health
