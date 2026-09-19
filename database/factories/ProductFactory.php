@@ -16,8 +16,8 @@ class ProductFactory extends Factory
             'store_id' => Store::factory(),
             'name' => fake()->words(3, true),
             'description' => fake()->sentence(),
-            'price' => fake()->randomFloat(2, 100, 100000),
-            'compare_at_price' => fake()->optional()->randomFloat(2, 1000, 200000),
+            'price' => fake()->numberBetween(10000, 10000000),
+            'compare_at_price' => fake()->optional()->numberBetween(100000, 20000000),
             'stock_quantity' => fake()->numberBetween(0, 100),
             'status' => 'DRAFT',
         ];
