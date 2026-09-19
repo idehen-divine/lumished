@@ -32,8 +32,6 @@ class Product extends Model
     public function casts(): array
     {
         return [
-            'price' => 'decimal:2',
-            'compare_at_price' => 'decimal:2',
             'photos' => 'array',
             'status' => ProductStatusEnum::class,
         ];
