@@ -1,3 +1,4 @@
+deploy.local.sh
 *.log
 .DS_Store
 .env
