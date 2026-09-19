@@ -106,7 +106,7 @@ class CreateTest extends TestCase
         $this->assertDatabaseHas('products', [
             'store_id' => $this->store->id,
             'name' => 'Test Product',
-            'price' => 2500.00,
+            'price' => 250000,
         ]);
     }
 
@@ -135,7 +135,7 @@ class CreateTest extends TestCase
         ]);
 
         $response->assertStatus(ResponseCode::CREATED->value);
-        $this->assertEquals('0.00', $response->json('data.product.price'));
+        $this->assertEquals(0, $response->json('data.product.price'));
     }
 
     public function test_customer_can_create_product_with_all_optional_fields()
@@ -155,6 +155,34 @@ class CreateTest extends TestCase
         $response->assertStatus(ResponseCode::CREATED->value);
         $this->assertEquals('Full Product', $response->json('data.product.name'));
         $this->assertEquals(ProductStatusEnum::PUBLISHED->name, $response->json('data.product.status'));
+    }
+
+    public function test_price_above_max_on_create_returns_validation_error()
+    {
+        Sanctum::actingAs($this->user);
+
+        $this->postJson(route('customer.products.store'), [
+            'name' => 'Overflow Product',
+            'price' => 99999999999999999999,
+            'category_ids' => [$this->category->id],
+        ])->assertStatus(ResponseCode::VALIDATION_ERROR->value);
+    }
+
+    public function test_high_price_within_column_limit_is_saved()
+    {
+        Sanctum::actingAs($this->user);
+
+        $response = $this->postJson(route('customer.products.store'), [
+            'name' => 'Expensive Product',
+            'price' => 12213213213,
+            'category_ids' => [$this->category->id],
+        ]);
+
+        $response->assertStatus(ResponseCode::CREATED->value);
+        $this->assertDatabaseHas('products', [
+            'name' => 'Expensive Product',
+            'price' => 1221321321300,
+        ]);
     }
 
     public function test_product_can_have_multiple_categories()

@@ -42,7 +42,7 @@ class UpdateTest extends TestCase
         $this->product = Product::factory()->create([
             'store_id' => $this->store->id,
             'name' => 'Old Name',
-            'price' => 1000.00,
+            'price' => 100000,
         ]);
         $this->product->categories()->attach($this->category->id);
     }
@@ -66,6 +66,17 @@ class UpdateTest extends TestCase
 
         $response->assertStatus(ResponseCode::SUCCESS->value)
             ->assertJsonPath('data.product.name', 'New Name')
-            ->assertJsonPath('data.product.price', '2000.00');
+            ->assertJsonPath('data.product.price', 2000);
+    }
+
+    public function test_price_above_max_on_update_returns_validation_error()
+    {
+        Sanctum::actingAs($this->user);
+
+        $this->putJson(route('customer.products.update', $this->product->id), [
+            'name' => 'New Name',
+            'price' => 99999999999999999999,
+            'category_ids' => [$this->category->id],
+        ])->assertStatus(ResponseCode::VALIDATION_ERROR->value);
     }
 }
