@@ -69,23 +69,14 @@ class ProductServiceImplement extends ServiceApi implements ProductService
                 $data['compare_at_price'] = moneyHelper()->toMinor($data['compare_at_price']);
             }
 
-
             $categoryIds = $data['category_ids'] ?? [];
             unset($data['category_ids']);
 
             $photoPath = null;
-            $extraPhotos = [];
 
             if (isset($data['photo'])) {
                 $photoPath = imageHelper()->storeAndConvert($data['photo'], 'products');
                 unset($data['photo']);
-            }
-
-            if (isset($data['photos'])) {
-                foreach ($data['photos'] as $file) {
-                    $extraPhotos[] = imageHelper()->storeAndConvert($file, 'products');
-                }
-                unset($data['photos']);
             }
 
             DB::beginTransaction();
@@ -97,18 +88,6 @@ class ProductServiceImplement extends ServiceApi implements ProductService
                 $finalPhoto = imageHelper()->moveToFinal($photoPath, $finalPath);
                 $this->productRepository->update($product->id, ['photo' => $finalPhoto]);
                 $product->photo = $finalPhoto;
-            }
-
-            if (! empty($extraPhotos)) {
-                $finalExtraPhotos = [];
-
-                foreach ($extraPhotos as $index => $tempPath) {
-                    $finalPath = imageHelper()->generateProductExtraPhotoPath($store->id, $product->id, $index);
-                    $finalExtraPhotos[] = imageHelper()->moveToFinal($tempPath, $finalPath);
-                }
-
-                $this->productRepository->update($product->id, ['photos' => $finalExtraPhotos]);
-                $product->photos = $finalExtraPhotos;
             }
 
             if (! empty($categoryIds)) {
@@ -127,10 +106,6 @@ class ProductServiceImplement extends ServiceApi implements ProductService
 
             if (isset($photoPath)) {
                 imageHelper()->deleteImage($photoPath);
-            }
-
-            foreach ($extraPhotos ?? [] as $tempPath) {
-                imageHelper()->deleteImage($tempPath);
             }
 
             return $this->logAndRespond($e, 'Failed to create product.');
@@ -194,20 +169,10 @@ class ProductServiceImplement extends ServiceApi implements ProductService
             }
 
             $photoPath = null;
-            $extraPhotos = null;
 
             if (isset($data['photo'])) {
                 $photoPath = imageHelper()->storeAndConvert($data['photo'], 'products');
                 unset($data['photo']);
-            }
-
-            if (isset($data['photos'])) {
-                $extraPhotos = [];
-
-                foreach ($data['photos'] as $file) {
-                    $extraPhotos[] = imageHelper()->storeAndConvert($file, 'products');
-                }
-                unset($data['photos']);
             }
 
             DB::beginTransaction();
@@ -219,22 +184,6 @@ class ProductServiceImplement extends ServiceApi implements ProductService
 
                 if ($oldPhoto) {
                     imageHelper()->deleteImage($oldPhoto);
-                }
-            }
-
-            if ($extraPhotos !== null) {
-                $oldPhotos = $product->photos ?? [];
-                $finalExtraPhotos = [];
-
-                foreach ($extraPhotos as $index => $tempPath) {
-                    $finalPath = imageHelper()->generateProductExtraPhotoPath($store->id, $product->id, $index);
-                    $finalExtraPhotos[] = imageHelper()->moveToFinal($tempPath, $finalPath);
-                }
-
-                $data['photos'] = $finalExtraPhotos;
-
-                foreach ($oldPhotos as $oldPath) {
-                    imageHelper()->deleteImage($oldPath);
                 }
             }
 
@@ -257,12 +206,6 @@ class ProductServiceImplement extends ServiceApi implements ProductService
 
             if (isset($photoPath)) {
                 imageHelper()->deleteImage($photoPath);
-            }
-
-            if (isset($extraPhotos)) {
-                foreach ($extraPhotos as $tempPath) {
-                    imageHelper()->deleteImage($tempPath);
-                }
             }
 
             return $this->logAndRespond($e, 'Failed to update product.');
@@ -289,10 +232,6 @@ class ProductServiceImplement extends ServiceApi implements ProductService
 
             if ($product->photo) {
                 imageHelper()->deleteImage($product->photo);
-            }
-
-            foreach ($product->photos ?? [] as $photo) {
-                imageHelper()->deleteImage($photo);
             }
 
             $this->productRepository->delete($id);
@@ -359,15 +298,11 @@ class ProductServiceImplement extends ServiceApi implements ProductService
     public function deleteStoreProducts(string $storeId): ServiceApi
     {
         try {
-            $products = $this->productRepository->query()->where('store_id', $storeId)->get(['id', 'photo', 'photos']);
+            $products = $this->productRepository->query()->where('store_id', $storeId)->get(['id', 'photo']);
 
             foreach ($products as $product) {
                 if ($product->photo) {
                     imageHelper()->deleteImage($product->photo);
-                }
-
-                foreach ($product->photos ?? [] as $photo) {
-                    imageHelper()->deleteImage($photo);
                 }
             }
 

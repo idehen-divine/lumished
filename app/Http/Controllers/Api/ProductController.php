@@ -44,7 +44,6 @@ class ProductController extends Controller
      *                 "compare_at_price": "129.99",
      *                 "stock_quantity": 50,
      *                 "photo": "https://example.com/photos/product.jpg",
-     *                 "photos": ["https://example.com/photos/product-1.jpg", "https://example.com/photos/product-2.jpg"],
      *                 "status": "PUBLISHED",
      *                 "categories": [
      *                     {
@@ -134,7 +133,6 @@ class ProductController extends Controller
      * @bodyParam compare_at_price number The original price for comparison. Example: 149.99
      * @bodyParam currency string required The currency code. Example: NGN
      * @bodyParam quantity int required Available stock quantity. Example: 50
-     * @bodyParam photos array Product images.
      * @bodyParam category_ids array required Array of category UUIDs. Example: ["01953801-abcd-1234-5678-1234567890ab"]
      *
      * @response 201 scenario="Created" {
@@ -150,7 +148,6 @@ class ProductController extends Controller
      *             "compare_at_price": null,
      *             "stock_quantity": 50,
      *             "photo": "https://example.com/photos/product.jpg",
-     *             "photos": ["https://example.com/photos/product-1.jpg", "https://example.com/photos/product-2.jpg"],
      *             "status": "DRAFT",
      *             "categories": [
      *                 {
@@ -213,7 +210,6 @@ class ProductController extends Controller
      *             "compare_at_price": "129.99",
      *             "stock_quantity": 50,
      *             "photo": "https://example.com/photos/product.jpg",
-     *             "photos": ["https://example.com/photos/product-1.jpg", "https://example.com/photos/product-2.jpg"],
      *             "status": "PUBLISHED",
      *             "categories": [
      *                 {
@@ -276,7 +272,6 @@ class ProductController extends Controller
      *             "compare_at_price": "99.99",
      *             "stock_quantity": 45,
      *             "photo": "https://example.com/photos/product.jpg",
-     *             "photos": ["https://example.com/photos/product-1.jpg", "https://example.com/photos/product-2.jpg"],
      *             "status": "PUBLISHED",
      *             "categories": [
      *                 {
