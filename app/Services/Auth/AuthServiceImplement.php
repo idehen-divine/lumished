@@ -101,8 +101,12 @@ class AuthServiceImplement extends ServiceApi implements AuthService
             Cache::forget('login_attempts:'.$email);
             Cache::forget($lockoutKey);
 
+            DB::beginTransaction();
+
             $user->tokens()->delete();
             $token = $user->createToken('auth')->plainTextToken;
+
+            DB::commit();
 
             return $this->setCode(ResponseCode::SUCCESS->value)
                 ->setMessage('Login successful')
@@ -113,6 +117,8 @@ class AuthServiceImplement extends ServiceApi implements AuthService
                     'permissions' => $user->getAllPermissionNames(),
                 ]);
         } catch (\Throwable $e) {
+            DB::rollBack();
+
             return $this->logAndRespond($e, 'Login failed', ResponseCode::SERVER_ERROR->value);
         }
     }
