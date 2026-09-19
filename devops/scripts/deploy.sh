@@ -490,33 +490,7 @@ reload_caddy() {
 }
 
 
-# Removes dangling and unused Docker images left behind by the build step
-# to prevent disk space from filling up over multiple deploys.
-cleanup() {
-    echo "🧹 Pruning unused Docker images and build cache..."
-    docker image prune -f
-    docker builder prune --keep-storage 2GB -f
-    echo "✅ Cleanup done"
-}
-
-
-# Archives the current laravel.log with a timestamp then removes all old log
-# files so the new deployment starts with a clean log slate.
-clear_application_logs() {
-    echo "🧹 Clearing application logs..."
-    docker compose exec -T -u root app sh -c "
-        LOG_FILE=storage/logs/laravel.log
-        if [ -f \"\$LOG_FILE\" ]; then
-            TIMESTAMP=\$(date +%Y%m%d_%H%M%S)
-            mv \"\$LOG_FILE\" \"storage/logs/laravel_\${TIMESTAMP}.log\"
-        fi
-        find storage/logs -type f -name '*.log' ! -name '.gitignore' -delete
-        touch \"\$LOG_FILE\"
-        chown www-data:www-data \"\$LOG_FILE\"
-        chmod 664 \"\$LOG_FILE\"
-    "
-    echo "✅ Logs cleared"
-}
+ 
 
 
 #===============================================================================
