@@ -204,12 +204,19 @@ class AuthServiceImplement extends ServiceApi implements AuthService
             }
 
             $user = $this->userRepository->findOrFail($userId);
+
+            DB::beginTransaction();
+
             $this->userRepository->update($user->id, ['password' => $data['password']]);
             $user->tokens()->delete();
+
+            DB::commit();
 
             return $this->setCode(ResponseCode::SUCCESS->value)
                 ->setMessage('Password reset successfully. Please log in with your new password.');
         } catch (\Throwable $e) {
+            DB::rollBack();
+
             return $this->logAndRespond($e);
         }
     }
@@ -554,12 +561,18 @@ class AuthServiceImplement extends ServiceApi implements AuthService
             $user = Auth::user();
             $userId = $user->id;
 
+            DB::beginTransaction();
+
             $user->tokens()->delete();
             $user->delete();
+
+            DB::commit();
 
             return $this->setCode(ResponseCode::SUCCESS->value)
                 ->setMessage('Your account has been deleted successfully.');
         } catch (\Throwable $e) {
+            DB::rollBack();
+
             return $this->logAndRespond($e);
         }
     }
