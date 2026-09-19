@@ -3,7 +3,6 @@ name: Deploy Lumished Backend
 on:
   push:
     branches:
-      - main
       - master
       - stage
 
