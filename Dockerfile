@@ -1,64 +1,66 @@
-FROM php:8.3-fpm
+FROM dunglas/frankenphp:php8.4-bookworm AS base
 
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libjpeg-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    libicu-dev \
-    libwebp-dev \
-    libmagickwand-dev \
-    libheif-dev \
-    libavif-dev \
-    zip \
-    unzip \
-    && docker-php-ext-install \
-    pdo_mysql \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    zip \
-    xml \
-    opcache \
-    intl \
-    && curl -sSL https://codeload.github.com/Imagick/imagick/tar.gz/refs/tags/3.8.0 | tar -xz -C /tmp \
-    && cd /tmp/imagick-3.8.0 \
-    && phpize \
-    && ./configure \
-    && make -j"$(nproc)" \
-    && make install \
-    && docker-php-ext-enable imagick \
-    && rm -rf /tmp/imagick-3.8.0 \
-    && apt-get clean \
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        unzip \
+        git \
+        jpegoptim \
+        optipng \
+        pngquant \
+        gifsicle \
+        webp \
+    && install-php-extensions \
+        pdo_mysql \
+        redis \
+        pcntl \
+        opcache \
+        gd \
+        exif \
+        zip \
+        intl \
+        bcmath \
+        imagick \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -sSL https://codeload.github.com/phpredis/phpredis/tar.gz/refs/tags/6.1.0 | tar -xz -C /tmp \
-    && cd /tmp/phpredis-6.1.0 \
-    && phpize \
-    && ./configure \
-    && make -j"$(nproc)" \
-    && make install \
-    && docker-php-ext-enable redis \
-    && rm -rf /tmp/phpredis-6.1.0
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+FROM base AS composer
 
-WORKDIR /var/www/html
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY composer.json composer.lock ./
-RUN composer install --no-scripts --no-autoloader --prefer-dist
+
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-scripts
+
+
+FROM base AS production
+
+COPY --from=composer /app/vendor ./vendor
 COPY . .
 
-RUN composer dump-autoload --optimize
+RUN mkdir -p \
+        storage/framework/cache \
+        storage/framework/sessions \
+        storage/framework/views \
+        storage/logs \
+        bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R ug+rwX storage bootstrap/cache \
+    && rm -f bootstrap/cache/packages.php bootstrap/cache/services.php
 
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+RUN php artisan package:discover --ansi || echo "package:discover skipped (dev providers missing)"
 
-EXPOSE 9000
+ENV APP_ENV=production
+ENV APP_DEBUG=false
 
-CMD ["php-fpm"]
+EXPOSE 80
+
+CMD ["frankenphp", "php-server", "--root", "public", "--listen", ":80"]
