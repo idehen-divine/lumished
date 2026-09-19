@@ -69,11 +69,10 @@ See [`rationale.md`](rationale.md) for design decisions and alternatives conside
 - store_id: uuid (FK to stores), required
 - name: string (255), required
 - description: text, nullable
-- price: decimal (10,2), required, min 0
-- compare_at_price: decimal (10,2), nullable
+- price: unsigned big int (minor units), required, min 0, max 184467440737095516.15
+- compare_at_price: unsigned big int (minor units), nullable, max 184467440737095516.15
 - stock_quantity: integer, default 0 (informational, not tracked)
 - photo: string (255), nullable (main image S3 URL)
-- photos: json, nullable (array of up to 3 extra S3 URLs)
 - status: enum (draft, published, archived), default draft
 - timestamps
 
@@ -106,7 +105,7 @@ See [`rationale.md`](rationale.md) for design decisions and alternatives conside
 | /api/v1/customer/stores/{id} | PUT | same as create, all fields optional. Omitting a file field keeps the existing image; sending null clears it. | updated store | bearer | 403 not owner, 422 |
 | /api/v1/customer/stores/{id} | DELETE | id:uuid(path) | message | bearer | 403 not owner, 404 |
 | /api/v1/store/{storeSlug}/products | GET | storeSlug:str(path), page, per_page, status(opt), category_id(opt) | paginated own products | bearer | 403 not owner |
-| /api/v1/store/{storeSlug}/products | POST | name:str(req), description:text(opt), price:decimal(req), compare_at_price:decimal(opt), stock_quantity:int(opt), photo:file(opt), photos:file[](opt, max 3), status:str(opt), category_ids:uuid[](req, at least 1) | product | bearer | 403 not owner, 422 |
+| /api/v1/store/{storeSlug}/products | POST | name:str(req), description:text(opt), price:decimal(req), compare_at_price:decimal(opt), stock_quantity:int(opt), photo:file(opt), status:str(opt), category_ids:uuid[](req, at least 1) | product | bearer | 403 not owner, 422 |
 | /api/v1/store/{storeSlug}/products/{id} | GET | storeSlug, id:uuid | product | bearer | 403 not owner, 404 |
 | /api/v1/store/{storeSlug}/products/{id} | PUT | same as create, all optional. Omitting a file field keeps the existing image. | updated product | bearer | 403 not owner, 422 |
 | /api/v1/store/{storeSlug}/products/{id} | DELETE | storeSlug, id:uuid | message | bearer | 403 not owner, 404 |
@@ -130,8 +129,8 @@ See [`rationale.md`](rationale.md) for design decisions and alternatives conside
 | Create store | slug | auto generated from name via Str::slug, checked for global uniqueness |
 | Create store | status | hardcoded to active |
 | Create store | logo_url | uploaded file, converted to webp 85% quality, stored on S3 via Laravel filesystem |
-| Create product | photo, photos | uploaded files, each converted to webp 85% quality, stored on S3 |
-| Create product | price | input param, decimal 10,2 |
+| Create product | photo | uploaded file, converted to webp 85% quality, stored on S3 |
+| Create product | price | input param (major units), converted to minor units via MoneyHelper |
 | Create product | stock_quantity | input param, default 0 |
 | Browse public stores | store list | DB, filtered by store status=active, sorted by creation date |
 | Browse public products | products list | DB, filtered by status=published and store status=active. Optional filter by category_id |
@@ -147,12 +146,12 @@ See [`rationale.md`](rationale.md) for design decisions and alternatives conside
 - Store slug is globally unique. Auto generated from name using Str::slug, appended with a number if the slug exists.
 - Category slug is unique within a store. Auto generated from name on create. Updating the name does NOT regenerate the slug.
 - Product price must be 0 or a positive decimal. Compare at price can be null or higher than price.
-- A store can have at most one logo image. A product can have at most one main photo and up to 3 extra photos.
+- A store can have at most one logo image. A product can have at most one main photo.
 - Parent_id must point to a category in the same store. A category cannot be its own parent (prevent circular reference).
 - Published products are only visible if the store status is active.
 - Deleting a category reparents its children to the deleted category's parent (or sets parent_id to null if the deleted category had no parent). The category is unassigned from its products (pivot rows deleted).
 - A product must have at least one category assigned (category_ids is required on create, minimum 1).
-- Omitting a file field (photo, photos, logo) on update preserves the existing stored value. The field must be explicitly set to null to clear it.
+- Omitting a file field (photo, logo) on update preserves the existing stored value. The field must be explicitly set to null to clear it.
 - Deleting a store cascades: all its products, categories, and pivot rows are deleted.
 
 **Security model**:
@@ -187,7 +186,7 @@ Build approach: Tracer Bullet (end to end thin vertical slices through every lay
 1. Create migrations for stores, categories (with parent_id self FK), products, and the category_product pivot table, satisfies AC-1, AC-3, AC-4
 2. Create Store model with HasUuids, enum casts (status), relationships (belongs to User, has many Products, has many Categories), and slug generation logic, satisfies AC-1, AC-9
 3. Create Category model with HasUuids, self referential parent/children relationship, unique constraint scope on store_id + slug, satisfies AC-3
-4. Create Product model with HasUuids, enum casts (status), casts for photos (JSON), belongs to many Categories, satisfies AC-4
+4. Create Product model with HasUuids, enum casts (status), belongs to many Categories, satisfies AC-4
 5. Create repositories (StoreRepository, CategoryRepository, ProductRepository) with interfaces and implementations following the existing UserRepository pattern, satisfies AC-1, AC-3, AC-4
 6. Create API resources (StoreResource, CategoryResource, ProductResource) matching the existing UserResource pattern, satisfies AC-1
 7. Create form requests for all endpoints (CreateStoreRequest, UpdateStoreRequest, CreateProductRequest, UpdateProductRequest, CreateCategoryRequest, UpdateCategoryRequest, UpdateStoreStatusRequest), satisfies AC-1, AC-3, AC-4
