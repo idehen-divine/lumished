@@ -31,12 +31,15 @@ class AuthServiceImplement extends ServiceApi implements AuthService
     public function register(array $data): ServiceApi
     {
         try {
+            DB::beginTransaction();
+
             $user = $this->userRepository->createCustomer($data);
+            $token = $user->createToken('auth')->plainTextToken;
+
+            DB::commit();
 
             $this->otpService->createAndSendOTP(OTPTypeEnum::VERIFY_EMAIL_OTP->name, $user->email, $user->first_name);
             Mail::to($user->email)->queue(new WelcomeCustomerMail($user->first_name));
-
-            $token = $user->createToken('auth')->plainTextToken;
 
             return $this->setCode(ResponseCode::CREATED->value)
                 ->setMessage('Account created successfully. Please check your email to verify your account.')
@@ -47,6 +50,8 @@ class AuthServiceImplement extends ServiceApi implements AuthService
                     'permissions' => $user->getAllPermissionNames(),
                 ]);
         } catch (\Throwable $e) {
+            DB::rollBack();
+
             return $this->logAndRespond($e, 'Registration failed', ResponseCode::SERVER_ERROR->value);
         }
     }
