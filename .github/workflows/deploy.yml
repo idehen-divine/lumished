@@ -1,0 +1,197 @@
+name: Deploy Lumished Backend
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - stage
+
+jobs:
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------
+      # Determine Environment
+      # ---------------------------------------------------------
+      - name: Determine Environment
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            echo "deploy_dir=/home/lumished/apps/lumished/production" >> $GITHUB_ENV
+            echo 'app_name=Lumished' >> $GITHUB_ENV
+            echo "app_env=production" >> $GITHUB_ENV
+            echo "app_debug=${{ secrets.APP_DEBUG_PRODUCTION }}" >> $GITHUB_ENV
+            echo "app_url=https://prod.lumished.org/" >> $GITHUB_ENV
+            echo "app_port=8002" >> $GITHUB_ENV
+
+            echo "db_host=${{ secrets.DB_HOST_PRODUCTION }}" >> $GITHUB_ENV
+            echo "db_port=3306" >> $GITHUB_ENV
+            echo "db_database=${{ secrets.DB_DATABASE_PRODUCTION }}" >> $GITHUB_ENV
+            echo "db_username=${{ secrets.DB_USERNAME_PRODUCTION }}" >> $GITHUB_ENV
+            echo "db_password=${{ secrets.DB_PASSWORD_PRODUCTION }}" >> $GITHUB_ENV
+
+            echo "redis_host=${{ secrets.REDIS_HOST_PRODUCTION }}" >> $GITHUB_ENV
+            echo "redis_password=${{ secrets.REDIS_PASSWORD_PRODUCTION }}" >> $GITHUB_ENV
+            echo "redis_port=${{ secrets.REDIS_PORT_PRODUCTION }}" >> $GITHUB_ENV
+            echo "redis_db=3" >> $GITHUB_ENV
+            echo "redis_cache_db=4" >> $GITHUB_ENV
+            echo "minio_port=9102" >> $GITHUB_ENV
+            echo "minio_console_port=9103" >> $GITHUB_ENV
+
+            echo "mail_scheme=${{ secrets.MAIL_SCHEME_PRODUCTION }}" >> $GITHUB_ENV
+            echo "mail_host=${{ secrets.MAIL_HOST_PRODUCTION }}" >> $GITHUB_ENV
+            echo "mail_port=${{ secrets.MAIL_PORT_PRODUCTION }}" >> $GITHUB_ENV
+            echo "mail_username=${{ secrets.MAIL_USERNAME_PRODUCTION }}" >> $GITHUB_ENV
+            echo "mail_password=${{ secrets.MAIL_PASSWORD_PRODUCTION }}" >> $GITHUB_ENV
+
+            echo "aws_bucket=${{ secrets.AWS_BUCKET_PRODUCTION }}" >> $GITHUB_ENV
+            echo "paystack_secret=${{ secrets.PAYSTACK_SECRET }}" >> $GITHUB_ENV
+            echo "migrate=migrate --force" >> $GITHUB_ENV
+          else
+            echo "deploy_dir=/home/lumished/apps/lumished/staging" >> $GITHUB_ENV
+            echo 'app_name=Lumished' >> $GITHUB_ENV
+            echo "app_env=staging" >> $GITHUB_ENV
+            echo "app_debug=${{ secrets.APP_DEBUG_STAGING }}" >> $GITHUB_ENV
+            echo "app_url=https://stage.lumished.org/" >> $GITHUB_ENV
+            echo "app_port=8003" >> $GITHUB_ENV
+
+            echo "db_host=${{ secrets.DB_HOST_STAGING }}" >> $GITHUB_ENV
+            echo "db_port=3306" >> $GITHUB_ENV
+            echo "db_database=${{ secrets.DB_DATABASE_STAGING }}" >> $GITHUB_ENV
+            echo "db_username=${{ secrets.DB_USERNAME_STAGING }}" >> $GITHUB_ENV
+            echo "db_password=${{ secrets.DB_PASSWORD_STAGING }}" >> $GITHUB_ENV
+
+            echo "redis_host=${{ secrets.REDIS_HOST_STAGING }}" >> $GITHUB_ENV
+            echo "redis_password=${{ secrets.REDIS_PASSWORD_STAGING }}" >> $GITHUB_ENV
+            echo "redis_port=${{ secrets.REDIS_PORT_STAGING }}" >> $GITHUB_ENV
+            echo "redis_db=5" >> $GITHUB_ENV
+            echo "redis_cache_db=6" >> $GITHUB_ENV
+            echo "minio_port=9102" >> $GITHUB_ENV
+            echo "minio_console_port=9103" >> $GITHUB_ENV
+
+            echo "mail_scheme=${{ secrets.MAIL_SCHEME_STAGING }}" >> $GITHUB_ENV
+            echo "mail_host=${{ secrets.MAIL_HOST_STAGING }}" >> $GITHUB_ENV
+            echo "mail_port=${{ secrets.MAIL_PORT_STAGING }}" >> $GITHUB_ENV
+            echo "mail_username=${{ secrets.MAIL_USERNAME_STAGING }}" >> $GITHUB_ENV
+            echo "mail_password=${{ secrets.MAIL_PASSWORD_STAGING }}" >> $GITHUB_ENV
+
+            echo "aws_bucket=${{ secrets.AWS_BUCKET_STAGING }}" >> $GITHUB_ENV
+            echo "paystack_secret=${{ secrets.PAYSTACK_TEST_SECRET }}" >> $GITHUB_ENV
+            echo "migrate=migrate:fresh --seed --force" >> $GITHUB_ENV
+          fi
+
+          echo "data_dir=/home/lumished/apps/lumished/data" >> $GITHUB_ENV
+          echo "db_root_password=${{ secrets.DB_ROOT_PASSWORD }}" >> $GITHUB_ENV
+          echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "aws_default_region=${{ secrets.AWS_DEFAULT_REGION }}" >> $GITHUB_ENV
+          echo "aws_url=https://bucket.lumished.org" >> $GITHUB_ENV
+          echo "aws_endpoint=http://minio:9000" >> $GITHUB_ENV
+          echo "aws_use_path_style_endpoint=true" >> $GITHUB_ENV
+
+      # ---------------------------------------------------------
+      # Setup SSH
+      # ---------------------------------------------------------
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          printf "%s\n" "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>&1 || echo "ssh-keyscan failed for ${{ secrets.SSH_HOST }}"
+          cat ~/.ssh/known_hosts
+
+      # ---------------------------------------------------------
+      # Ensure Remote Directory Exists
+      # ---------------------------------------------------------
+      - name: 📁 Ensure Remote Directory Exists
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set +H
+            sudo mkdir -p ${{ env.deploy_dir }}
+            sudo mkdir -p ${{ env.data_dir }}/mysql ${{ env.data_dir }}/redis ${{ env.data_dir }}/minio ${{ env.data_dir }}/logs
+            sudo chown -R ${{ secrets.SSH_USER }}:${{ secrets.SSH_USER }} ${{ env.deploy_dir }}
+            # Data dirs for redis/minio/logs can be owned by deploy user, but mysql must be 999:999
+            sudo chown -R ${{ secrets.SSH_USER }}:${{ secrets.SSH_USER }} ${{ env.data_dir }}/redis ${{ env.data_dir }}/minio ${{ env.data_dir }}/logs 2>/dev/null || true
+            sudo chown ${{ secrets.SSH_USER }}:${{ secrets.SSH_USER }} ${{ env.data_dir }} 2>/dev/null || true
+            sudo chmod 777 ${{ env.data_dir }} 2>/dev/null || true
+            # Fix mysql perms via docker (works without sudo password, handles userns-remap) or sudo
+            sudo chown -R 999:999 ${{ env.data_dir }}/mysql 2>/dev/null || docker run --rm -v ${{ env.data_dir }}/mysql:/data alpine chown -R 999:999 /data 2>/dev/null || true
+            sudo chmod -R 777 ${{ env.data_dir }}/mysql 2>/dev/null || chmod -R 777 ${{ env.data_dir }}/mysql 2>/dev/null || true
+
+      # ---------------------------------------------------------
+      # Sync Files via rsync
+      # ---------------------------------------------------------
+      - name: 📂 Sync Files via rsync
+        run: |
+          rsync -avz --delete \
+          --exclude=".git" \
+          --exclude=".github" \
+          --exclude=".env" \
+          --exclude="vendor" \
+          --exclude=".scribe" \
+          --exclude="node_modules" \
+          --exclude="storage/logs" \
+          --exclude="storage/app/public" \
+          --exclude="docker" \
+          --exclude="deploy.local.sh" \
+          --exclude=".history" \
+          -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" \
+          ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.deploy_dir }}/
+
+      # ---------------------------------------------------------
+      # Run Deploy Script
+      # ---------------------------------------------------------
+      - name: 🚀 Run Deploy Script
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set +H
+            cd ${{ env.deploy_dir }}
+            chmod +x deploy.sh
+            APP_PORT="${{ env.app_port }}" \
+            DEPLOY_DIR="${{ env.deploy_dir }}" \
+            DATA_DIR="${{ env.data_dir }}" \
+            APP_NAME="${{ env.app_name }}" \
+            APP_ENV="${{ env.app_env }}" \
+            APP_DEBUG="${{ env.app_debug }}" \
+            APP_URL="${{ env.app_url }}" \
+            DB_HOST="${{ env.db_host }}" \
+            DB_PORT="${{ env.db_port }}" \
+            DB_DATABASE="${{ env.db_database }}" \
+            DB_USERNAME="${{ env.db_username }}" \
+            DB_PASSWORD="${{ env.db_password }}" \
+            DB_ROOT_PASSWORD="${{ env.db_root_password }}" \
+            REDIS_HOST="${{ env.redis_host }}" \
+            REDIS_PASSWORD="${{ env.redis_password }}" \
+            REDIS_PORT="${{ env.redis_port }}" \
+            REDIS_DB="${{ env.redis_db }}" \
+            REDIS_CACHE_DB="${{ env.redis_cache_db }}" \
+            MAIL_SCHEME="${{ env.mail_scheme }}" \
+            MAIL_HOST="${{ env.mail_host }}" \
+            MAIL_PORT="${{ env.mail_port }}" \
+            MAIL_USERNAME="${{ env.mail_username }}" \
+            MAIL_PASSWORD="${{ env.mail_password }}" \
+            AWS_ACCESS_KEY_ID="${{ env.aws_access_key_id }}" \
+            AWS_SECRET_ACCESS_KEY="${{ env.aws_secret_access_key }}" \
+            AWS_DEFAULT_REGION="${{ env.aws_default_region }}" \
+            AWS_BUCKET="${{ env.aws_bucket }}" \
+            AWS_ENDPOINT="${{ env.aws_endpoint }}" \
+            AWS_USE_PATH_STYLE_ENDPOINT="${{ env.aws_use_path_style_endpoint }}" \
+            AWS_URL="${{ env.aws_url }}" \
+            MINIO_PORT="${{ env.minio_port }}" \
+            MINIO_CONSOLE_PORT="${{ env.minio_console_port }}" \
+            PAYSTACK_SECRET="${{ env.paystack_secret }}" \
+            MIGRATE_CMD="${{ env.migrate }}" \
+            ./deploy.sh deploy
