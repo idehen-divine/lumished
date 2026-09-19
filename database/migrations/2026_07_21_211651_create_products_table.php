@@ -14,8 +14,8 @@ return new class extends Migration
             $table->foreignUuid('store_id')->constrained('stores')->onDelete('cascade');
             $table->string('name', 255);
             $table->text('description')->nullable();
-            $table->decimal('price', 10, 2)->default(0);
-            $table->decimal('compare_at_price', 10, 2)->nullable();
+            $table->unsignedBigInteger('price')->default(0);
+            $table->unsignedBigInteger('compare_at_price')->nullable();
             $table->integer('stock_quantity')->default(0);
             $table->string('photo', 255)->nullable();
             $table->json('photos')->nullable();
