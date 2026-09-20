@@ -25,7 +25,7 @@ jobs:
             echo 'app_name=Lumished' >> $GITHUB_ENV
             echo "app_env=production" >> $GITHUB_ENV
             echo "app_debug=${{ secrets.APP_DEBUG_PRODUCTION }}" >> $GITHUB_ENV
-            echo "app_url=https://prod.lumished.org/" >> $GITHUB_ENV
+            echo "app_url=https://prod.lumished.com/" >> $GITHUB_ENV
             echo "app_port=8002" >> $GITHUB_ENV
 
             echo "db_host=${{ secrets.DB_HOST_PRODUCTION }}" >> $GITHUB_ENV
@@ -56,7 +56,7 @@ jobs:
             echo 'app_name=Lumished' >> $GITHUB_ENV
             echo "app_env=staging" >> $GITHUB_ENV
             echo "app_debug=${{ secrets.APP_DEBUG_STAGING }}" >> $GITHUB_ENV
-            echo "app_url=https://stage.lumished.org/" >> $GITHUB_ENV
+            echo "app_url=https://stage.lumished.com/" >> $GITHUB_ENV
             echo "app_port=8003" >> $GITHUB_ENV
 
             echo "db_host=${{ secrets.DB_HOST_STAGING }}" >> $GITHUB_ENV
@@ -89,7 +89,7 @@ jobs:
           echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
           echo "aws_default_region=us-east-1" >> $GITHUB_ENV
-          echo "aws_url=https://bucket.lumished.org" >> $GITHUB_ENV
+          echo "aws_url=https://s3.lumished.com" >> $GITHUB_ENV
           echo "aws_endpoint=http://minio:9000" >> $GITHUB_ENV
           echo "aws_use_path_style_endpoint=true" >> $GITHUB_ENV
 
