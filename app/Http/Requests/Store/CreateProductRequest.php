@@ -22,7 +22,7 @@ class CreateProductRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0', 'max:184467440737095516.15'],
             'compare_at_price' => ['nullable', 'numeric', 'min:0', 'max:184467440737095516.15'],
-            'stock_quantity' => ['nullable', 'integer', 'min:0'],
+            'stock_quantity' => ['nullable', 'integer', 'min:0', 'max:2147483647'],
             'photo' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:5120'],
             'status' => ['nullable', 'string', Rule::in($statuses)],
             'category_ids' => ['nullable', 'array', 'min:1'],
