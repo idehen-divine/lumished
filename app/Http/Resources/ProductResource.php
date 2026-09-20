@@ -17,7 +17,7 @@ class ProductResource extends JsonResource
             'price' => moneyHelper()->fromMinor($this->price),
             'compare_at_price' => moneyHelper()->fromMinor($this->compare_at_price),
             'stock_quantity' => $this->stock_quantity,
-            'photo' => $this->photo,
+            'photo' => imageHelper()->getUrl($this->photo),
             'status' => $this->status?->name,
             'categories' => CategoryResource::collection($this->whenLoaded('categories')),
             'store' => new StoreResource($this->whenLoaded('store')),

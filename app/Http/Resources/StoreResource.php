@@ -14,7 +14,7 @@ class StoreResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'tagline' => $this->tagline,
-            'logo_url' => $this->logo_url,
+            'logo_url' => imageHelper()->getUrl($this->logo_url),
             'currency' => $this->currency,
             'phone' => $this->phone,
             'email' => $this->email,
