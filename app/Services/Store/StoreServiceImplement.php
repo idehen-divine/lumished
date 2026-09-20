@@ -137,6 +137,14 @@ class StoreServiceImplement extends ServiceApi implements StoreService
                     ->setMessage('Store not found.');
             }
 
+            // Photos grouped under stores/{storeId}/ for easy folder cleanup
+            imageHelper()->deleteDirectory(imageHelper()->generateStoreDirectory($store->id));
+
+            // Fallback: delete logo individually if directory delete misses
+            if ($store->logo_url) {
+                imageHelper()->deleteImage($store->logo_url);
+            }
+
             $this->storeRepository->delete($store->id);
 
             return $this->setCode(ResponseCode::SUCCESS->value)

@@ -81,6 +81,47 @@ class ImageHelper extends Helper
     }
 
     /**
+     * Delete a directory and all its contents from storage.
+     *
+     * Useful because photos are grouped under stores/{storeId}/products/{productId}/ for easy cleanup.
+     *
+     * @param  string  $directory  The storage directory prefix to delete
+     */
+    public function deleteDirectory(string $directory): void
+    {
+        $directory = trim($directory, '/');
+
+        if ($directory === '') {
+            return;
+        }
+
+        $this->disk()->deleteDirectory($directory);
+    }
+
+    /**
+     * Generate the storage directory for a product's photos.
+     *
+     * @param  string  $storeId  The store UUID
+     * @param  string  $productId  The product UUID
+     * @return string The product photos directory
+     */
+    public function generateProductPhotosDirectory(string $storeId, string $productId): string
+    {
+        return "stores/{$storeId}/products/{$productId}";
+    }
+
+    /**
+     * Generate the storage directory for a store.
+     *
+     * @param  string  $storeId  The store UUID
+     * @return string The store directory
+     */
+    public function generateStoreDirectory(string $storeId): string
+    {
+        return "stores/{$storeId}";
+    }
+
+    /**
      * Get the full URL for an image path.
      *
      * Converts a relative storage path (e.g. stores/.../photo.webp) to a full absolute URL

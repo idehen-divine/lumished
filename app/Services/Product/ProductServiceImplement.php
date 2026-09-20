@@ -402,6 +402,10 @@ class ProductServiceImplement extends ServiceApi implements ProductService
                     ->setMessage('Product not found.');
             }
 
+            // Photos are grouped under stores/{storeId}/products/{productId}/ for easy folder cleanup
+            imageHelper()->deleteDirectory(imageHelper()->generateProductPhotosDirectory($store->id, $product->id));
+
+            // Fallback individual deletes for eventual consistency
             if ($product->photo) {
                 imageHelper()->deleteImage($product->photo);
             }
@@ -474,6 +478,10 @@ class ProductServiceImplement extends ServiceApi implements ProductService
     public function deleteStoreProducts(string $storeId): ServiceApi
     {
         try {
+            // Delete the entire products folder for this store (grouped for easy deletion)
+            imageHelper()->deleteDirectory("stores/{$storeId}/products");
+
+            // Fallback per-product cleanup to handle any remaining files
             $products = $this->productRepository->query()->where('store_id', $storeId)->get(['id', 'photo', 'photos']);
 
             foreach ($products as $product) {
@@ -484,6 +492,9 @@ class ProductServiceImplement extends ServiceApi implements ProductService
                 foreach ($product->photos ?? [] as $photo) {
                     imageHelper()->deleteImage($photo);
                 }
+
+                // Also ensure individual product folder is removed
+                imageHelper()->deleteDirectory(imageHelper()->generateProductPhotosDirectory($storeId, $product->id));
             }
 
             $this->productRepository->deleteByStore($storeId);

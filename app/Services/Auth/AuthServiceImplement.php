@@ -6,6 +6,7 @@ use App\Enums\OTPTypeEnum;
 use App\Enums\ResponseCode;
 use App\Http\Resources\UserResource;
 use App\Mail\WelcomeCustomerMail;
+use App\Models\Store;
 use App\Repositories\User\UserRepository;
 use App\Services\OTP\OTPService;
 use App\Traits\LogAndRespond;
@@ -560,6 +561,22 @@ class AuthServiceImplement extends ServiceApi implements AuthService
         try {
             $user = Auth::user();
             $userId = $user->id;
+
+            // Delete grouped store folder (stores/{storeId}/) which contains logo + products/{productId}/ for easy cleanup
+            $store = Store::where('user_id', $userId)->first();
+
+            if ($store) {
+                imageHelper()->deleteDirectory(imageHelper()->generateStoreDirectory($store->id));
+
+                if ($store->logo_url) {
+                    imageHelper()->deleteImage($store->logo_url);
+                }
+            }
+
+            // Also cleanup profile image if any
+            if (! empty($user->profile_image)) {
+                imageHelper()->deleteImage($user->profile_image);
+            }
 
             DB::beginTransaction();
 

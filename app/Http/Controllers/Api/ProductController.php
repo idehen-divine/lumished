@@ -129,13 +129,16 @@ class ProductController extends Controller
      * @authenticated
      *
      * @bodyParam name string required The product name. Example: Wireless Headphones
-     * @bodyParam description string required Product description. Example: High quality wireless headphones with noise cancellation.
+     * @bodyParam description string Product description. Example: High quality wireless headphones with noise cancellation.
      * @bodyParam price number required The product price. Example: 99.99
      * @bodyParam compare_at_price number The original price for comparison. Example: 149.99
      * @bodyParam currency string required The currency code. Example: NGN
-     * @bodyParam quantity int required Available stock quantity. Example: 50
-     * @bodyParam photos array Product images.
-     * @bodyParam category_ids array required Array of category UUIDs. Example: ["01953801-abcd-1234-5678-1234567890ab"]
+     * @bodyParam stock_quantity int Available stock quantity. Example: 50
+     * @bodyParam photo file Main product image (single, optional, max 5MB, jpeg/png/webp). Example: @photo.jpg
+     * @bodyParam photos file[] Extra gallery images (max 3, each max 5MB, jpeg/png/webp). Send as photos[] array to create. Example: photos[]=@extra1.jpg&photos[]=@extra2.jpg
+     * @bodyParam photos.* file Each extra image. Example: @extra.jpg
+     * @bodyParam status string Product status: DRAFT or PUBLISHED. Example: DRAFT
+     * @bodyParam category_ids string[] Array of category UUIDs (min 1). Example: ["01953801-abcd-1234-5678-1234567890ab"]
      *
      * @response 201 scenario="Created" {
      *     "code": 201,
