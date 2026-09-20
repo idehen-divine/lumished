@@ -255,6 +255,14 @@ class ProductController extends Controller
      *
      * Updates the specified product.
      *
+     * **Photo handling (frontend):**
+     * - `photo` (single main image, `imageHelper()->getUrl`): Omit → keep, `null` → delete file + DB null, `<file>` → replace (old `photo.webp` deleted).
+     * - `photos` (extra gallery, max 3, `imageHelper()->getImageCollectionUrls`):
+     *   - Omit → keep all.
+     *   - `null` or `[]` → delete all extras.
+     *   - `photos[]` (sequential `0,1,2` with files, no nulls) → **full replace** all (deletes old 3, saves new 0..n as `extra-0.webp` etc.).
+     *   - `photos[index] => file|null` (indexed/associative patch) → **partial update**. `null` deletes that index, `file` replaces that index, omitted indices keep. Index is 0-based (`0,1,2`) but 1-based `1,2,3` is also accepted and auto-shifted. Example: have 3 photos `[A,B,C]`, to update `B` and delete `A`: `photos[0]=null&photos[1]=@newB.jpg` (0-based) or `photos[1]=null&photos[2]=@newB.jpg` (1-based) → result `[newB,C]`.
+     *
      * @group Customer Management
      *
      * @subgroup Products
@@ -262,6 +270,17 @@ class ProductController extends Controller
      * @authenticated
      *
      * @urlParam id string required The product UUID. Example: 01953801-abcd-1234-5678-1234567890ab
+     *
+     * @bodyParam name string Product name. Example: Wireless Headphones
+     * @bodyParam description string Product description. Example: Updated product description.
+     * @bodyParam price numeric Product price. Example: 79.99
+     * @bodyParam compare_at_price numeric Compare at price. Example: 99.99
+     * @bodyParam stock_quantity int Stock quantity. Example: 45
+     * @bodyParam photo file Main product image. Omit to keep, null to delete, file to replace. Example: @photo.jpg
+     * @bodyParam photos array Extra gallery images (max 3). Omit to keep, []/null to delete all, photos[] to replace all, photos[index]=>file|null for indexed patch. Example: {"0": null, "1": "file"}
+     * @bodyParam photos.* file Each extra image or null for indexed delete. Example: @extra.jpg
+     * @bodyParam status string Product status: DRAFT or PUBLISHED. Example: PUBLISHED
+     * @bodyParam category_ids string[] Category UUIDs. Example: ["01953801-abcd-1234-5678-1234567890ab"]
      *
      * @response 200 scenario="Success" {
      *     "code": 200,

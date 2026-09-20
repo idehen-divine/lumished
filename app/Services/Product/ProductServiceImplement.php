@@ -69,7 +69,6 @@ class ProductServiceImplement extends ServiceApi implements ProductService
                 $data['compare_at_price'] = moneyHelper()->toMinor($data['compare_at_price']);
             }
 
-
             $categoryIds = $data['category_ids'] ?? [];
             unset($data['category_ids']);
 
@@ -194,25 +193,81 @@ class ProductServiceImplement extends ServiceApi implements ProductService
             }
 
             $photoPath = null;
+            $removePhoto = false;
+            $clearPhotos = false;
             $extraPhotos = null;
+            $patchOperations = null;
+            $patchTempPaths = [];
 
-            if (isset($data['photo'])) {
-                $photoPath = imageHelper()->storeAndConvert($data['photo'], 'products');
+            if (array_key_exists('photo', $data)) {
+                if ($data['photo'] === null) {
+                    $removePhoto = true;
+                } elseif (isset($data['photo'])) {
+                    $photoPath = imageHelper()->storeAndConvert($data['photo'], 'products');
+                }
                 unset($data['photo']);
             }
 
-            if (isset($data['photos'])) {
-                $extraPhotos = [];
+            if (array_key_exists('photos', $data)) {
+                $photosValue = $data['photos'];
 
-                foreach ($data['photos'] as $file) {
-                    $extraPhotos[] = imageHelper()->storeAndConvert($file, 'products');
+                if ($photosValue === null || (is_array($photosValue) && empty($photosValue))) {
+                    $clearPhotos = true;
+                    $extraPhotos = [];
+                } elseif (is_array($photosValue)) {
+                    $hasNull = in_array(null, $photosValue, true);
+                    $keys = array_keys($photosValue);
+                    $isSequential = $keys === range(0, count($photosValue) - 1) && ! $hasNull;
+
+                    // Support 1-based indices like [1=>null,2=>file] -> normalize to 0-based if no 0 key
+                    $normalizeShift = false;
+                    if (! $isSequential && ! empty($keys)) {
+                        $minKey = min(array_map('intval', $keys));
+                        $maxKey = max(array_map('intval', $keys));
+                        if ($minKey === 1 && ! in_array(0, $keys, true) && $maxKey <= 3) {
+                            $normalizeShift = true;
+                        }
+                    }
+
+                    if ($isSequential) {
+                        // Full replace: photos[] => replaces all
+                        $extraPhotos = [];
+
+                        foreach ($photosValue as $file) {
+                            $extraPhotos[] = imageHelper()->storeAndConvert($file, 'products');
+                        }
+                    } else {
+                        // Partial indexed patch: photos[1=>null] or photos[2=>file]
+                        $patchOperations = [];
+                        $patchTempPaths = [];
+
+                        foreach ($photosValue as $k => $v) {
+                            $idx = (int) $k;
+                            if ($normalizeShift) {
+                                $idx -= 1;
+                            }
+
+                            if ($v === null) {
+                                $patchOperations[$idx] = null;
+                            } else {
+                                $tempPath = imageHelper()->storeAndConvert($v, 'products');
+                                $patchOperations[$idx] = $tempPath;
+                                $patchTempPaths[] = $tempPath;
+                            }
+                        }
+                    }
                 }
                 unset($data['photos']);
             }
 
             DB::beginTransaction();
 
-            if ($photoPath) {
+            if ($removePhoto) {
+                if ($product->photo) {
+                    imageHelper()->deleteImage($product->photo);
+                }
+                $data['photo'] = null;
+            } elseif ($photoPath) {
                 $oldPhoto = $product->photo;
                 $finalPath = imageHelper()->generateProductPhotoPath($store->id, $product->id);
                 $data['photo'] = imageHelper()->moveToFinal($photoPath, $finalPath);
@@ -222,7 +277,53 @@ class ProductServiceImplement extends ServiceApi implements ProductService
                 }
             }
 
-            if ($extraPhotos !== null) {
+            if ($clearPhotos) {
+                $oldPhotos = $product->photos ?? [];
+                $data['photos'] = null;
+
+                foreach ($oldPhotos as $oldPath) {
+                    imageHelper()->deleteImage($oldPath);
+                }
+            } elseif ($patchOperations !== null) {
+                $oldPhotos = $product->photos ?? [];
+                // Ensure oldPhotos is indexed 0..n-1
+                $oldPhotos = array_values($oldPhotos);
+
+                foreach ($patchOperations as $idx => $tempOrNull) {
+                    if ($tempOrNull === null) {
+                        if (isset($oldPhotos[$idx])) {
+                            imageHelper()->deleteImage($oldPhotos[$idx]);
+                            unset($oldPhotos[$idx]);
+                        }
+                    } else {
+                        $finalPath = imageHelper()->generateProductExtraPhotoPath($store->id, $product->id, $idx);
+                        $finalPhoto = imageHelper()->moveToFinal($tempOrNull, $finalPath);
+
+                        if (isset($oldPhotos[$idx]) && $oldPhotos[$idx]) {
+                            imageHelper()->deleteImage($oldPhotos[$idx]);
+                        }
+
+                        $oldPhotos[$idx] = $finalPhoto;
+                    }
+                }
+
+                // Reindex to sequential and filter gaps, ensure max 3
+                ksort($oldPhotos);
+                $newPhotos = array_values(array_filter($oldPhotos, fn ($v) => $v !== null && $v !== ''));
+
+                if (count($newPhotos) > 3) {
+                    // Clean up newly moved files that would exceed limit
+                    foreach (array_slice($newPhotos, 3) as $excess) {
+                        imageHelper()->deleteImage($excess);
+                    }
+                    $newPhotos = array_slice($newPhotos, 0, 3);
+                }
+
+                $data['photos'] = empty($newPhotos) ? null : $newPhotos;
+
+                // Remove used temp paths from tracking to avoid double delete in catch
+                $patchTempPaths = [];
+            } elseif ($extraPhotos !== null) {
                 $oldPhotos = $product->photos ?? [];
                 $finalExtraPhotos = [];
 
@@ -255,13 +356,27 @@ class ProductServiceImplement extends ServiceApi implements ProductService
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            if (isset($photoPath)) {
+            if (isset($photoPath) && $photoPath) {
                 imageHelper()->deleteImage($photoPath);
             }
 
-            if (isset($extraPhotos)) {
+            if (isset($extraPhotos) && is_array($extraPhotos)) {
                 foreach ($extraPhotos as $tempPath) {
                     imageHelper()->deleteImage($tempPath);
+                }
+            }
+
+            if (isset($patchTempPaths) && is_array($patchTempPaths)) {
+                foreach ($patchTempPaths as $tempPath) {
+                    imageHelper()->deleteImage($tempPath);
+                }
+            }
+
+            if (isset($patchOperations) && is_array($patchOperations)) {
+                foreach ($patchOperations as $tempPath) {
+                    if (is_string($tempPath)) {
+                        imageHelper()->deleteImage($tempPath);
+                    }
                 }
             }
 
