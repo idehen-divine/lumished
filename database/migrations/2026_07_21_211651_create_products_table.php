@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('compare_at_price')->nullable();
             $table->integer('stock_quantity')->default(0);
             $table->string('photo', 255)->nullable();
+            $table->json('photos')->nullable();
             $table->enum('status', array_column(ProductStatusEnum::cases(), 'name'))->default(ProductStatusEnum::DRAFT->name);
             $table->timestamps();
         });

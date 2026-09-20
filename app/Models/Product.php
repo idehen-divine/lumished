@@ -25,12 +25,14 @@ class Product extends Model
         'compare_at_price',
         'stock_quantity',
         'photo',
+        'photos',
         'status',
     ];
 
     public function casts(): array
     {
         return [
+            'photos' => 'array',
             'status' => ProductStatusEnum::class,
         ];
     }

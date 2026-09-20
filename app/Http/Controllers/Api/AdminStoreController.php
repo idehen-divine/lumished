@@ -242,6 +242,7 @@ class AdminStoreController extends Controller
      *                 "compare_at_price": "129.99",
      *                 "stock_quantity": 50,
      *                 "photo": "https://example.com/photos/product.jpg",
+     *                 "photos": ["https://example.com/photos/product-1.jpg", "https://example.com/photos/product-2.jpg"],
      *                 "status": "PUBLISHED",
      *                 "categories": [
      *                     {

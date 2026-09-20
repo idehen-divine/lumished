@@ -192,4 +192,17 @@ class ImageHelper extends Helper
     {
         return "stores/{$storeId}/products/{$productId}/photo.webp";
     }
+
+    /**
+     * Generate the storage path for an extra product photo.
+     *
+     * @param  string  $storeId  The store UUID
+     * @param  string  $productId  The product UUID
+     * @param  int  $index  The photo index (0-based)
+     * @return string The generated storage path
+     */
+    public function generateProductExtraPhotoPath(string $storeId, string $productId, int $index): string
+    {
+        return "stores/{$storeId}/products/{$productId}/extra-{$index}.webp";
+    }
 }

@@ -24,6 +24,8 @@ class CreateProductRequest extends FormRequest
             'compare_at_price' => ['nullable', 'numeric', 'min:0', 'max:184467440737095516.15'],
             'stock_quantity' => ['nullable', 'integer', 'min:0', 'max:2147483647'],
             'photo' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:5120'],
+            'photos' => ['nullable', 'array', 'max:3'],
+            'photos.*' => ['image', 'mimes:jpeg,png,webp', 'max:5120'],
             'status' => ['nullable', 'string', Rule::in($statuses)],
             'category_ids' => ['nullable', 'array', 'min:1'],
             'category_ids.*' => ['string', Rule::exists('categories', 'id')],
@@ -39,6 +41,8 @@ class CreateProductRequest extends FormRequest
             'price.max' => 'The product price is too large.',
             'compare_at_price.max' => 'The compare at price is too large.',
             'photo.max' => 'The main photo size cannot exceed 5MB.',
+            'photos.max' => 'You can upload up to 3 extra photos.',
+            'photos.*.max' => 'Each extra photo size cannot exceed 5MB.',
             'category_ids.min' => 'At least one category must be assigned.',
         ];
     }
