@@ -27,4 +27,14 @@ class UserRepositoryImplement extends Eloquent implements UserRepository
 
         return $user->load(['roles']);
     }
+
+    /** {@inheritDoc} */
+    public function createAdmin(array $data): User
+    {
+        $user = $this->model->create($data);
+
+        $user->setRole('ADMIN');
+
+        return $user->load(['roles']);
+    }
 }

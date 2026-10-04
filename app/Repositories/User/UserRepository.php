@@ -22,4 +22,12 @@ interface UserRepository extends Repository
      * @return User The newly created user with the CUSTOMER role assigned
      */
     public function createCustomer(array $data): User;
+
+    /**
+     * Create a new admin user and assign the ADMIN role.
+     *
+     * @param  array  $data  The user data (first_name, last_name, email, password)
+     * @return User The newly created user with the ADMIN role assigned
+     */
+    public function createAdmin(array $data): User;
 }
