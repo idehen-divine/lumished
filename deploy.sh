@@ -268,6 +268,31 @@ generate_env() {
 
 
 #===============================================================================
+# Firebase
+#===============================================================================
+
+write_firebase_credentials() {
+    echo
+    echo "========================================"
+    echo "Writing Firebase credentials"
+    echo "========================================"
+
+    if [[ -z "${FIREBASE_CREDENTIALS_JSON:-}" ]]; then
+        echo "ERROR: FIREBASE_CREDENTIALS_JSON is empty. Must be provided via workflow env."
+        exit 1
+    fi
+
+    mkdir -p storage/app/firebase
+
+    printf '%s' "$FIREBASE_CREDENTIALS_JSON" > storage/app/firebase/service-account.json
+
+    chmod 600 storage/app/firebase/service-account.json
+
+    echo "Firebase credentials written (overwritten)."
+}
+
+
+#===============================================================================
 # Build
 #===============================================================================
 
@@ -854,6 +879,7 @@ health() {
 
 deploy() {
     generate_env
+    write_firebase_credentials
     build
 
     # Ensure DATA_DIR exists for mysql/redis/minio (easy migration via host dir)

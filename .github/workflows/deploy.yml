@@ -140,6 +140,7 @@ jobs:
           --exclude="node_modules" \
           --exclude="storage/logs" \
           --exclude="storage/app/public" \
+          --exclude="storage/app/firebase" \
           --exclude="docker" \
           --exclude="deploy.local.sh" \
           --exclude=".history" \
@@ -192,5 +193,6 @@ jobs:
             MINIO_PORT="${{ env.minio_port }}" \
             MINIO_CONSOLE_PORT="${{ env.minio_console_port }}" \
             PAYSTACK_SECRET="${{ env.paystack_secret }}" \
+            FIREBASE_CREDENTIALS_JSON='${{ secrets.FIREBASE_CREDENTIALS_JSON }}' \
             MIGRATE_CMD="${{ env.migrate }}" \
             ./deploy.sh deploy
