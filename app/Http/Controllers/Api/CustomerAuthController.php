@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ConfirmTwoFactorRequest;
 use App\Http\Requests\Auth\DeleteAccountRequest;
@@ -10,17 +11,22 @@ use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Http\Requests\Auth\SocialLoginRequest;
 use App\Http\Requests\Auth\UpdateEmailRequest;
 use App\Http\Requests\Auth\VerifyEmailRequest;
 use App\Http\Requests\Auth\VerifyOtpRequest;
 use App\Http\Requests\Auth\VerifyTwoFactorRequest;
 use App\Services\Auth\AuthService;
+use App\Services\SocialAuth\SocialAuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CustomerAuthController extends Controller
 {
-    public function __construct(protected AuthService $authService) {}
+    public function __construct(
+        protected AuthService $authService,
+        protected SocialAuthService $socialAuthService,
+    ) {}
 
     /**
      * Register a new customer account.
@@ -140,6 +146,48 @@ class CustomerAuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         return $this->authService->login($request->validated())->toJson();
+    }
+
+    /**
+     * Log in with a social provider.
+     *
+     * Authenticates with a Firebase ID token from Google or Apple.
+     * Finds or creates a customer by email and returns a Sanctum token.
+     *
+     * @group Customer Management
+     *
+     * @subgroup Authentication
+     *
+     * @bodyParam provider string required The social provider. Example: GOOGLE
+     * @bodyParam access_token string required The Firebase ID token from the provider. Example: eyJhbGciOi...
+     *
+     * @response 200 scenario="Success" {
+     *     "code": 200,
+     *     "message": "Authentication successful",
+     *     "data": {
+     *         "user": {},
+     *         "token": "1|plainTextToken",
+     *         "roles": ["CUSTOMER"],
+     *         "permissions": []
+     *     }
+     * }
+     * @response 400 scenario="Unsupported Provider" {
+     *     "code": 400,
+     *     "message": "Social provider 'APPLE' is not supported or not implemented."
+     * }
+     * @response 422 scenario="Validation Error" {
+     *     "message": "The given data was invalid.",
+     *     "errors": {
+     *         "provider": ["The selected provider is invalid."],
+     *         "access_token": ["The access token field is required."]
+     *     }
+     * }
+     *
+     * @unauthenticated
+     */
+    public function socialLogin(SocialLoginRequest $request): JsonResponse
+    {
+        return $this->socialAuthService->socialLogin($request, RoleEnum::CUSTOMER->name)->toJson();
     }
 
     /**
