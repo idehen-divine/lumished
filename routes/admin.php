@@ -9,6 +9,7 @@ Route::prefix('v1')->group(function () {
     /**********************    Auth Routes    ***********************/
     Route::prefix('auth')->name('auth.')->controller(AdminAuthController::class)->group(function () {
         Route::post('/sessions', 'login')->middleware('throttle:auth')->name('login');
+        Route::post('/social', 'socialLogin')->middleware('throttle:auth')->name('social.login');
         Route::post('/sessions/2fa', 'verifyTwoFactor')->middleware('throttle:auth')->name('2fa.verify');
         Route::post('/sessions/2fa/email', 'resendTwoFactorEmail')->middleware('throttle:auth')->name('2fa.email');
         Route::delete('/sessions', 'logout')->middleware(['auth:sanctum', 'admin'])->name('logout');
