@@ -134,9 +134,9 @@ class ProductController extends Controller
      * @bodyParam compare_at_price number The original price for comparison. Example: 149.99
      * @bodyParam currency string required The currency code. Example: NGN
      * @bodyParam stock_quantity int Available stock quantity. Example: 50
-     * @bodyParam photo file Main product image (single, optional, max 5MB, jpeg/png/webp). Example: @photo.jpg
-     * @bodyParam photos file[] Extra gallery images (max 3, each max 5MB, jpeg/png/webp). Send as photos[] array to create. Example: photos[]=@extra1.jpg&photos[]=@extra2.jpg
-     * @bodyParam photos.* file Each extra image. Example: @extra.jpg
+     * @bodyParam photo file Main product image (single, optional, max 5MB, jpeg/png/webp). No-example
+     * @bodyParam photos file[] Extra gallery images (max 3, each max 5MB, jpeg/png/webp). Send as photos[] array to create. No-example
+     * @bodyParam photos.* file Each extra image. No-example
      * @bodyParam status string Product status: DRAFT or PUBLISHED. Example: DRAFT
      * @bodyParam category_ids string[] Array of category UUIDs (min 1). Example: ["01953801-abcd-1234-5678-1234567890ab"]
      *
@@ -279,9 +279,9 @@ class ProductController extends Controller
      * @bodyParam price numeric Product price. Example: 79.99
      * @bodyParam compare_at_price numeric Compare at price. Example: 99.99
      * @bodyParam stock_quantity int Stock quantity. Example: 45
-     * @bodyParam photo file Main product image. Omit to keep, null to delete, file to replace. Example: @photo.jpg
-     * @bodyParam photos array Extra gallery images (max 3). Omit to keep, []/null to delete all, photos[] to replace all, photos[index]=>file|null for indexed patch. Example: {"0": null, "1": "file"}
-     * @bodyParam photos.* file Each extra image or null for indexed delete. Example: @extra.jpg
+     * @bodyParam photo file Main product image. Omit to keep, null to delete, file to replace. No-example
+     * @bodyParam photos array Extra gallery images (max 3). Omit to keep, []/null to delete all, photos[] to replace all, photos[index]=>file|null for indexed patch. No-example
+     * @bodyParam photos.* file Each extra image or null for indexed delete. No-example
      * @bodyParam status string Product status: DRAFT or PUBLISHED. Example: PUBLISHED
      * @bodyParam category_ids string[] Category UUIDs. Example: ["01953801-abcd-1234-5678-1234567890ab"]
      *
