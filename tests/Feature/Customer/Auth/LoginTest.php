@@ -164,6 +164,17 @@ class LoginTest extends TestCase
         ])->assertStatus(ResponseCode::SERVER_ERROR->value);
     }
 
+    public function test_social_login_without_configured_credentials_returns_clear_error(): void
+    {
+        config()->set('services.firebase.credentials', '');
+
+        $this->postJson(route('customer.auth.social.login'), [
+            'provider' => 'GOOGLE',
+            'access_token' => 'some-token',
+        ])->assertStatus(ResponseCode::SERVER_ERROR->value)
+            ->assertJson(['message' => 'Social login is not configured. Please try again later.']);
+    }
+
     public function test_social_login_with_valid_payload_returns_token(): void
     {
         $this->app->singleton(SocialAuthService::class, fn () => new class extends ServiceApi implements SocialAuthService
