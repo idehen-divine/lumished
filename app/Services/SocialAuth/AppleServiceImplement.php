@@ -37,8 +37,17 @@ class AppleServiceImplement extends ServiceApi implements SocialAuthService
         try {
             $validated = $request->validated();
 
+            $credentials = config('services.firebase.credentials');
+            $trimmed = is_string($credentials) ? ltrim($credentials) : '';
+            $isInlineJson = $trimmed !== '' && ($trimmed[0] === '{' || $trimmed[0] === '[');
+
+            if (empty($credentials) || (is_string($credentials) && ! $isInlineJson && ! is_file($credentials))) {
+                return $this->setCode(ResponseCode::SERVER_ERROR->value)
+                    ->setMessage('Social login is not configured. Please try again later.');
+            }
+
             $firebase = (new Factory)
-                ->withServiceAccount(config('services.firebase.credentials'));
+                ->withServiceAccount($credentials);
 
             $verifiedToken = $firebase->createAuth()->verifyIdToken($validated['access_token']);
 
