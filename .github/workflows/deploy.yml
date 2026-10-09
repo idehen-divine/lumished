@@ -85,6 +85,7 @@ jobs:
           fi
 
           echo "data_dir=/home/lumished/apps/lumished/data" >> $GITHUB_ENV
+          echo "firebase_credentials=/app/storage/app/firebase/service-account.json" >> $GITHUB_ENV
           echo "db_root_password=${{ secrets.DB_ROOT_PASSWORD }}" >> $GITHUB_ENV
           echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
@@ -193,6 +194,7 @@ jobs:
             MINIO_PORT="${{ env.minio_port }}" \
             MINIO_CONSOLE_PORT="${{ env.minio_console_port }}" \
             PAYSTACK_SECRET="${{ env.paystack_secret }}" \
+            FIREBASE_CREDENTIALS="${{ env.firebase_credentials }}" \
             FIREBASE_CREDENTIALS_JSON='${{ secrets.FIREBASE_CREDENTIALS_JSON }}' \
             MIGRATE_CMD="${{ env.migrate }}" \
             ./deploy.sh deploy

@@ -145,6 +145,8 @@ generate_env() {
         MAIL_PASSWORD
 
         PAYSTACK_SECRET
+
+        FIREBASE_CREDENTIALS
     )
 
     #===========================================================================
