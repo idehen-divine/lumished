@@ -13,6 +13,9 @@ storage/*
 !storage/framework/views/.gitignore
 !storage/app/.gitignore
 !storage/app/public/.gitignore
+!storage/app/
+!storage/app/firebase/
+!storage/app/firebase/service-account.json
 docker
 *.md
 tests
