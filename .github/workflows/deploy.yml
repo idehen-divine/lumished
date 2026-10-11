@@ -85,7 +85,7 @@ jobs:
           fi
 
           echo "data_dir=/home/lumished/apps/lumished/data" >> $GITHUB_ENV
-          echo "firebase_credentials=/app/storage/app/firebase/service-account.json" >> $GITHUB_ENV
+          echo "firebase_credentials=storage/app/firebase/service-account.json" >> $GITHUB_ENV
           echo "db_root_password=${{ secrets.DB_ROOT_PASSWORD }}" >> $GITHUB_ENV
           echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
