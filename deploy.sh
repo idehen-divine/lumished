@@ -680,7 +680,10 @@ fix_permissions() {
 
 generate_api_docs() {
     echo "📘 Checking for Scribe..."
-    if compose exec -T app php artisan list 2>/dev/null | grep -q "scribe:generate"; then
+    # Capture first: piping into `grep -q` makes artisan hit SIGPIPE, which pipefail reports as failure
+    local artisan_commands
+    artisan_commands=$(compose exec -T app php artisan list 2>/dev/null || true)
+    if grep -q "scribe:generate" <<<"$artisan_commands"; then
         echo "📘 Generating API documentation..."
         compose exec -T app php artisan route:clear
         compose exec -T app php artisan scribe:generate
